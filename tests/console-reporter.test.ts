@@ -92,8 +92,13 @@ function createReport(findingCount = 2): AnalysisReport {
     },
     score: {
       breakdown: {
+        categoryWeightedScore: 90,
+        criticalRiskAdjustment: 10,
+        maintenanceBurden: 0,
+        contributors: [],
         deductions: [],
         strengths: ["Imports are healthy."],
+        summary: "Architecture is healthy.",
         weaknesses: ["Architecture needs attention."],
       },
       categories: [
@@ -130,6 +135,17 @@ describe("ConsoleReporter", () => {
     expect(output.indexOf("[CRITICAL]")).toBeLessThan(output.indexOf("[WARNING]"));
     expect(output.indexOf("architecture")).toBeLessThan(output.indexOf("components"));
     expect(output.includes(`${String.fromCharCode(27)}[`)).toBe(false);
+  });
+
+  it("does not label a B-range risk score as healthy", () => {
+    const report = createReport();
+    const output = new ConsoleReporter().render(
+      { ...report, score: { ...report.score, grade: "B", overall: 75 } },
+      { colors: false },
+    ).stdout;
+
+    expect(output).toContain("Needs Attention");
+    expect(output).not.toContain("Healthy Architecture");
   });
 
   it("supports deterministic compact, verbose, JSON, and CI output", () => {

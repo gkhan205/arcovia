@@ -18,6 +18,7 @@ import {
   ANALYSIS_JSON_VERSION,
   createAnalysisJson,
   HtmlReporter,
+  parseAnalysisBenchmarkProfile,
   serializeAnalysisJson,
   validateAnalysisJson,
   writeAnalysisJson,
@@ -194,8 +195,13 @@ function createReport(): AnalysisReport {
     },
     score: {
       breakdown: {
+        categoryWeightedScore: 80,
+        criticalRiskAdjustment: 0,
+        maintenanceBurden: 0,
+        contributors: [],
         deductions: [],
         strengths: ["Small dependency graph"],
+        summary: "Circular import is the highest-priority risk.",
         weaknesses: ["Circular import"],
       },
       categories: [],
@@ -248,6 +254,39 @@ describe("Analysis JSON", () => {
     expect(artifact.graph.nodes[2]?.metadata).toEqual({});
     expect(artifact.metrics.linesOfCode).toBe(70);
     expect(artifact.metrics.packages).toBe(1);
+    expect(artifact.analysis.architectureSummary).toBe(
+      "Circular import is the highest-priority risk.",
+    );
+    expect(artifact.analysis.hotspots[0]).toMatchObject({
+      file: "src/App.tsx",
+      findingCount: 1,
+      priorityScore: 100,
+      estimatedScoreRecovery: 0,
+      severityCounts: { critical: 1, error: 0, info: 0, warning: 0 },
+    });
+    expect(artifact.analysis.quickWins).toEqual([]);
+    expect(artifact.analysis.roadmap[0]).toMatchObject({ file: "src/App.tsx" });
+  });
+
+  it("applies a validated benchmark profile without fabricating a comparison", () => {
+    const profile = parseAnalysisBenchmarkProfile({
+      cohort: "Next.js production applications",
+      framework: "react",
+      sampleSize: 40,
+      score: { p25: 55, p50: 70, p75: 85 },
+      version: "2026.07",
+    });
+    const artifact = createAnalysisJson(createReport(), { ...options, benchmark: profile });
+
+    expect(artifact.analysis.benchmark).toEqual({
+      cohort: "Next.js production applications",
+      medianScore: 70,
+      percentileBand: "above-median",
+      sampleSize: 40,
+      status: "available",
+      version: "2026.07",
+    });
+    expect(() => parseAnalysisBenchmarkProfile({ cohort: "bad" })).toThrow("score distribution");
   });
 
   it("rejects unsafe paths before output", () => {
@@ -286,7 +325,8 @@ describe("Analysis JSON", () => {
     expect(html).toContain("window.__ARCOVIA_ANALYSIS__=");
     expect(html).toContain("ARCHITECTURE HEALTH");
     expect(html).toContain("DEPENDENCY MAP");
-    expect(html).toContain("Graph view");
+    expect(html).not.toContain("Graph view");
+    expect(html).not.toContain("List view");
     expect(html).toContain("User code");
     expect(html).toContain("External packages");
     expect(html).toContain("Focus connections");

@@ -27,6 +27,7 @@ class CoreCommandRunner implements CommandRunner {
       projectPath: input.projectPath,
     });
     await this.pipeline.execute(result.report, {
+      ...(input.benchmark === undefined ? {} : { benchmark: input.benchmark }),
       console: true,
       html: input.generateHtml,
       json: input.generateJson,

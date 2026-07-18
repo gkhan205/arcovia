@@ -177,6 +177,27 @@ h3 {
 .hero p {
   color: var(--muted);
 }
+.score-formula {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 1.5rem;
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+.score-formula span,
+.score-formula strong {
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 60%, transparent);
+  padding: 0.45rem 0.55rem;
+}
+.score-formula strong {
+  color: var(--accent);
+}
+.score-formula b {
+  color: var(--accent);
+}
 .stat-grid,
 .metric-grid {
   display: grid;
@@ -251,6 +272,159 @@ h3 {
   display: grid;
   grid-template-columns: 1.3fr 1fr;
   gap: 1.5rem;
+}
+.score-driver {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--line);
+  padding: 0.85rem 0;
+}
+.score-driver:first-of-type {
+  padding-top: 0;
+}
+.score-driver strong,
+.score-driver small {
+  display: block;
+}
+.score-driver small {
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.45;
+  margin-top: 0.25rem;
+}
+.score-driver em {
+  color: var(--danger);
+  font-size: 1.1rem;
+  font-style: normal;
+}
+.strengths ul {
+  display: grid;
+  gap: 0.8rem;
+  margin: 1rem 0 0;
+  padding-left: 1.2rem;
+}
+.strengths li {
+  color: var(--muted);
+  font-size: 0.83rem;
+  line-height: 1.45;
+}
+.strengths li::marker {
+  color: var(--accent);
+}
+.benchmark-panel p {
+  color: var(--muted);
+  line-height: 1.5;
+}
+.timeline {
+  display: flex;
+  gap: 0.7rem;
+  list-style: none;
+  margin: 1.25rem 0 0;
+  overflow-x: auto;
+  padding: 0;
+}
+.timeline li {
+  border-left: 2px solid var(--accent);
+  min-width: 7rem;
+  padding: 0.5rem 0.75rem;
+}
+.timeline strong,
+.timeline span {
+  display: block;
+}
+.timeline strong {
+  font-size: 1.6rem;
+}
+.timeline span {
+  color: var(--muted);
+  font-size: 0.65rem;
+  margin-top: 0.25rem;
+}
+.hotspots {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+.action-plan {
+  border: 1px solid var(--line);
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 1.5rem;
+  padding: 1rem;
+}
+.action-plan.roadmap {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+}
+.action-plan h3 {
+  margin: -0.1rem 0 0.4rem;
+}
+.action {
+  align-items: start;
+  background: var(--bg);
+  border-left: 2px solid var(--accent);
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: 0.8rem;
+}
+.action strong,
+.action small {
+  display: block;
+}
+.action small,
+.action p {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+.action p {
+  line-height: 1.4;
+  margin: 0.35rem 0 0;
+}
+.action span {
+  color: var(--accent);
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+.hotspot {
+  align-items: start;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+  padding: 1.1rem;
+}
+.hotspot-rank {
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+.hotspot strong,
+.hotspot small {
+  display: block;
+}
+.hotspot small {
+  color: var(--muted);
+  font-size: 0.7rem;
+  margin-top: 0.3rem;
+}
+.hotspot p {
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  margin: 0.7rem 0 0;
+}
+.hotspot small.recovery {
+  color: var(--accent);
+  margin-top: 0.65rem;
+}
+.hotspot-severity {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: end;
 }
 .risk {
   display: flex;

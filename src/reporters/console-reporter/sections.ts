@@ -76,10 +76,24 @@ export function renderProject(report: AnalysisReport): string {
 /** Renders the score before any findings, emphasizing the primary health signal. */
 export function renderScore(score: ArchitectureScore, theme: ConsoleTheme): string {
   const health =
-    score.overall >= 75 ? theme.success("Healthy Architecture") : theme.warning("Needs Attention");
-  return ["Architecture Score", `${score.overall} / 100`, `Grade: ${score.grade}`, health].join(
-    "\n",
-  );
+    score.overall >= 90 ? theme.success("Healthy Architecture") : theme.warning("Needs Attention");
+  const explanation = [
+    `Category-weighted health: ${score.breakdown.categoryWeightedScore}`,
+    ...(score.breakdown.maintenanceBurden > 0
+      ? [`Maintenance-burden adjustment: -${score.breakdown.maintenanceBurden}`]
+      : []),
+    ...(score.breakdown.criticalRiskAdjustment > 0
+      ? [`Critical-risk adjustment: -${score.breakdown.criticalRiskAdjustment}`]
+      : []),
+    score.breakdown.summary,
+  ];
+  return [
+    "Architecture Score",
+    `${score.overall} / 100`,
+    `Grade: ${score.grade}`,
+    health,
+    ...explanation,
+  ].join("\n");
 }
 
 /** Renders a severity-count overview that remains legible without color. */

@@ -68,7 +68,16 @@ const graph: ArchitectureGraph = {
   },
 };
 const score: ArchitectureScore = {
-  breakdown: { deductions: [], strengths: [], weaknesses: [] },
+  breakdown: {
+    categoryWeightedScore: 100,
+    criticalRiskAdjustment: 0,
+    maintenanceBurden: 0,
+    contributors: [],
+    deductions: [],
+    strengths: [],
+    summary: "test",
+    weaknesses: [],
+  },
   categories: [],
   grade: "A+",
   metadata: {
@@ -217,6 +226,8 @@ describe("ReporterPipeline", () => {
     });
     await writeFile(join(directory, "analysis.json"), "previous json");
     await writeFile(join(directory, "report.html"), "previous html");
+    await writeFile(join(directory, "analysis-legacy.json"), "legacy json");
+    await writeFile(join(directory, "report-legacy.html"), "legacy html");
     const pipeline = new ReporterPipeline({
       consoleReporter: { render: () => ({ stderr: "", stdout: "" }) },
       htmlReporter: { write: async (path) => writeFile(path, "current html") },
@@ -231,10 +242,16 @@ describe("ReporterPipeline", () => {
       expect(await readFile(join(directory, "analysis.json"), "utf8")).toBe("current json");
       expect(await readFile(join(directory, "report.html"), "utf8")).toBe("current html");
       expect(
-        await readFile(join(directory, "analysis-2026-07-18T10-30-45-123Z.json"), "utf8"),
+        await readFile(join(directory, "history/analysis-2026-07-18T10-30-45-123Z.json"), "utf8"),
       ).toBe("previous json");
-      expect(await readFile(join(directory, "report-2026-07-18T10-30-45-123Z.html"), "utf8")).toBe(
-        "previous html",
+      expect(
+        await readFile(join(directory, "history/report-2026-07-18T10-30-45-123Z.html"), "utf8"),
+      ).toBe("previous html");
+      expect(await readFile(join(directory, "history/analysis-legacy.json"), "utf8")).toBe(
+        "legacy json",
+      );
+      expect(await readFile(join(directory, "history/report-legacy.html"), "utf8")).toBe(
+        "legacy html",
       );
     } finally {
       await rm(directory, { force: true, recursive: true });

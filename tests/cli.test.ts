@@ -146,6 +146,24 @@ describe("Arcovia CLI", () => {
     ]);
   });
 
+  it("uses Arcovia global quality bands when benchmark is passed without a profile path", async () => {
+    const calls: AnalyzeProjectInput[] = [];
+    const { dependencies } = createDependencies({
+      commandRunner: {
+        analyze: async (input) => {
+          calls.push(input);
+          return createReport(input.projectPath);
+        },
+      },
+    });
+
+    expect(await run(["node", "arcovia", "analyze", "--benchmark"], dependencies)).toBe(0);
+    expect(calls[0]?.benchmark).toMatchObject({
+      cohort: "Arcovia global quality bands",
+      score: { p25: 75, p50: 85, p75: 93 },
+    });
+  });
+
   it("reports a missing project without calling Core", async () => {
     const { dependencies, output } = createDependencies({
       fileSystem: {
@@ -260,7 +278,16 @@ function createReport(projectPath: string): AnalysisReport {
       overall: 0,
       grade: "F",
       categories: [],
-      breakdown: { deductions: [], strengths: [], weaknesses: [] },
+      breakdown: {
+        categoryWeightedScore: 0,
+        criticalRiskAdjustment: 0,
+        maintenanceBurden: 0,
+        contributors: [],
+        deductions: [],
+        strengths: [],
+        summary: "test",
+        weaknesses: [],
+      },
       metadata: {
         confidence: { reason: "test", value: 0 },
         criticalFindings: 0,

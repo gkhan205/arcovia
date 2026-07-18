@@ -102,9 +102,11 @@ describe("ScoreEngine", () => {
     expect(score.grade).toBe("A+");
     expect(score.categories.every((category) => category.score === 100)).toBe(true);
     expect(score.breakdown.deductions).toEqual([]);
+    expect(score.breakdown.contributors).toEqual([]);
+    expect(score.breakdown.strengths).toContain("No critical architecture findings were detected.");
   });
 
-  it("deduplicates findings and caps the penalty applied by one rule", () => {
+  it("deduplicates findings and applies diminishing per-rule penalties", () => {
     const findings = [
       createFinding("one", Severity.Critical),
       createFinding("duplicate", Severity.Critical),
@@ -121,14 +123,20 @@ describe("ScoreEngine", () => {
 
     expect(score.metadata.duplicateFindingsIgnored).toBe(1);
     expect(score.breakdown.deductions).toEqual([
-      expect.objectContaining({ findingCount: 3, penalty: 10, ruleId: "rule" }),
+      expect.objectContaining({ findingCount: 3, penalty: 27.5, ruleId: "rule", weight: 1 }),
     ]);
     expect(score.categories.find((category) => category.category === "architecture")?.score).toBe(
-      90,
+      72.5,
+    );
+    expect(score.breakdown.categoryWeightedScore).toBe(91.75);
+    expect(score.breakdown.criticalRiskAdjustment).toBe(24);
+    expect(score.overall).toBe(67.75);
+    expect(score.breakdown.contributors[0]).toEqual(
+      expect.objectContaining({ impact: 24, label: "Critical-risk adjustment" }),
     );
   });
 
-  it("normalizes penalties for larger projects and honors category weights", () => {
+  it("derives the overall score from category health plus a bounded critical-risk adjustment", () => {
     const finding = createFinding("critical", Severity.Critical);
     const small = new ScoreEngine().calculate(createInput([finding], 100));
     const large = new ScoreEngine().calculate(createInput([finding], 10_000));
@@ -145,13 +153,49 @@ describe("ScoreEngine", () => {
       },
     });
 
-    expect(large.overall).toBeGreaterThan(small.overall);
-    expect(weighted.overall).toBe(90);
+    expect(small.overall).toBe(85.5);
+    expect(large.overall).toBe(85.5);
+    expect(weighted.overall).toBe(75);
+    expect(weighted.breakdown.categoryWeightedScore).toBe(85);
+    expect(weighted.breakdown.criticalRiskAdjustment).toBe(10);
+  });
+
+  it("weights circular dependencies above hygiene findings while bounding repeated hygiene noise", () => {
+    const circular = {
+      ...createFinding("circular", Severity.Critical, "no-circular-imports"),
+      title: "Circular module dependency",
+    };
+    const unused = Array.from({ length: 100 }, (_, index) =>
+      createFinding(`unused-${index}`, Severity.Info, "unused-export"),
+    );
+
+    const circularScore = new ScoreEngine().calculate(createInput([circular]));
+    const hygieneScore = new ScoreEngine().calculate(createInput(unused));
+
+    expect(circularScore.overall).toBe(83.25);
+    expect(circularScore.breakdown.deductions[0]).toEqual(
+      expect.objectContaining({ penalty: 22.5, ruleId: "no-circular-imports", weight: 1.5 }),
+    );
+    expect(hygieneScore.overall).toBeGreaterThan(99);
+    expect(hygieneScore.breakdown.deductions[0]?.penalty).toBeLessThanOrEqual(3);
+  });
+
+  it("applies a capped maintenance burden to high-volume warning debt", () => {
+    const warnings = Array.from({ length: 37 }, (_, index) =>
+      createFinding(`warning-${index}`, Severity.Warning, `warning-rule-${index}`),
+    );
+    const score = new ScoreEngine().calculate(createInput(warnings));
+
+    expect(score.breakdown.maintenanceBurden).toBe(6.69);
+    expect(score.breakdown.contributors).toContainEqual(
+      expect.objectContaining({ impact: 6.69, label: "Maintenance burden" }),
+    );
   });
 
   it("calculates stable letter grades", () => {
     expect(calculateGrade(97)).toBe("A+");
-    expect(calculateGrade(90)).toBe("A");
+    expect(calculateGrade(93)).toBe("A");
+    expect(calculateGrade(90)).toBe("A-");
     expect(calculateGrade(85)).toBe("B+");
     expect(calculateGrade(75)).toBe("B");
     expect(calculateGrade(65)).toBe("C+");

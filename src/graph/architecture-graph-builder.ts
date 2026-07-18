@@ -162,7 +162,9 @@ function resolveLocalModule(
     return modules.find((module) => relativeCandidates(source, sourcePath).includes(module.path));
   }
 
-  const normalizedAlias = source.startsWith("@/") ? `src/${source.slice(2)}` : source;
+  if (!source.startsWith("@/")) return undefined;
+
+  const normalizedAlias = `src/${source.slice(2)}`;
   const aliasMatches = modules.filter(
     (module) =>
       stripExtension(module.path) === normalizedAlias ||
@@ -219,7 +221,12 @@ function findCycles(adjacency: Adjacency): readonly GraphCycle[] {
     }
     if (complete.has(node)) return;
     stack.push(node);
-    for (const child of adjacency.children.get(node) ?? []) visit(child);
+    for (const child of adjacency.children.get(node) ?? []) {
+      // A file importing itself is an invalid edge, but it is not a multi-module
+      // circular dependency. Keep the edge visible in the graph without
+      // escalating it through the circular-import rule.
+      if (child !== node) visit(child);
+    }
     stack.pop();
     complete.add(node);
   };

@@ -1,0 +1,11 @@
+{
+  "cohort": "Next.js production applications",
+  "framework": "next",
+  "sampleSize": 40,
+  "score": {
+    "p25": 55,
+    "p50": 70,
+    "p75": 85
+  },
+  "version": "2026.07"
+}

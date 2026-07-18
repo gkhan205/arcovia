@@ -1,6 +1,11 @@
+import { readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import type { Command } from "commander";
 
+import {
+  type AnalysisBenchmarkProfile,
+  parseAnalysisBenchmarkProfile,
+} from "../../reporters/index.js";
 import { createCliConfiguration } from "../config.js";
 import type { CliDependencies } from "../dependencies.js";
 import { CliError, ExitCode } from "../errors/index.js";
@@ -9,6 +14,7 @@ import { Progress } from "../ui/index.js";
 /** Options accepted by the analyze command. */
 export interface AnalyzeOptions {
   readonly ai?: boolean;
+  readonly benchmark?: string | true;
   readonly html?: boolean;
   readonly json?: boolean;
   readonly markdown?: boolean;
@@ -26,6 +32,10 @@ export function register(program: Command, dependencies: CliDependencies): void 
     .option("--json", "generate an analysis JSON artifact")
     .option("--markdown", "generate a Markdown report")
     .option("--ai", "include an optional AI review")
+    .option(
+      "--benchmark [path]",
+      "use Arcovia global bands or a custom benchmark profile JSON file",
+    )
     .option("--output <path>", "write reports to a directory")
     .option("--verbose", "display verbose execution information")
     .action(async (projectPath: string | undefined, options: AnalyzeOptions) => {
@@ -37,6 +47,12 @@ export function register(program: Command, dependencies: CliDependencies): void 
         options.output === undefined
           ? join(resolvedProjectPath, ".arcovia-report")
           : resolve(dependencies.currentDirectory(), options.output);
+      const benchmark =
+        options.benchmark === undefined
+          ? undefined
+          : options.benchmark === true
+            ? ARCOVIA_GLOBAL_BENCHMARK
+            : await loadBenchmark(resolve(dependencies.currentDirectory(), options.benchmark));
 
       progress.start("Validating project path");
       await validateProjectPath(resolvedProjectPath, dependencies);
@@ -46,6 +62,7 @@ export function register(program: Command, dependencies: CliDependencies): void 
         progress.start("Analyzing project");
         const report = await dependencies.commandRunner.analyze({
           ai: options.ai ?? false,
+          ...(benchmark === undefined ? {} : { benchmark }),
           generateHtml: options.html ?? generateDefaultReports,
           generateJson: options.json ?? generateDefaultReports,
           generateMarkdown: options.markdown ?? false,
@@ -60,6 +77,28 @@ export function register(program: Command, dependencies: CliDependencies): void 
         throw error;
       }
     });
+}
+
+const ARCOVIA_GLOBAL_BENCHMARK: AnalysisBenchmarkProfile = {
+  cohort: "Arcovia global quality bands",
+  sampleSize: 0,
+  score: { p25: 75, p50: 85, p75: 93 },
+  version: "1.0.0",
+};
+
+async function loadBenchmark(path: string) {
+  try {
+    const value = JSON.parse(await readFile(path, "utf8")) as unknown;
+    return parseAnalysisBenchmarkProfile(value);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    throw new CliError(
+      `Unable to load benchmark profile: ${message}`,
+      ExitCode.InvalidArguments,
+      ["Provide cohort, sampleSize, version, and score p25/p50/p75 values in JSON."],
+      "BENCHMARK_INVALID",
+    );
+  }
 }
 
 async function validateProjectPath(path: string, dependencies: CliDependencies): Promise<void> {

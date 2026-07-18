@@ -94,7 +94,7 @@ describe("ArchitectureGraphBuilder", () => {
     expect(graph.statistics.connectedComponents).toBe(1);
   });
 
-  it("detects self imports and isolated modules without classifying them", () => {
+  it("does not classify direct self imports as circular dependencies", () => {
     const model = createModel(
       [
         createModule("self", "file-self", "src/self.ts"),
@@ -105,10 +105,27 @@ describe("ArchitectureGraphBuilder", () => {
 
     const graph = new ArchitectureGraphBuilder().build(model);
 
-    expect(graph.cycles).toHaveLength(1);
-    expect(graph.cycles[0]?.length).toBe(1);
+    expect(graph.cycles).toEqual([]);
     expect(graph.orphans).toEqual(["orphan"]);
     expect(graph.statistics.orphans).toBe(1);
+  });
+
+  it("keeps bare package imports external when their names match local modules", () => {
+    const graph = new ArchitectureGraphBuilder().build(
+      createModel(
+        [createModule("sonner-module", "file-sonner", "src/components/ui/sonner.tsx")],
+        [createImport("file-sonner", "sonner")],
+      ),
+    );
+
+    expect(graph.edges).toContainEqual(
+      expect.objectContaining({
+        source: "sonner-module",
+        isExternal: true,
+      }),
+    );
+    expect(graph.edges.some((edge) => edge.source === edge.target)).toBe(false);
+    expect(graph.cycles).toEqual([]);
   });
 
   it("follows barrel re-exports so a consumed barrel keeps its modules connected", () => {

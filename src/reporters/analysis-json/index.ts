@@ -1,11 +1,16 @@
 export type {
+  AnalysisBenchmarkProfile,
+  AnalysisJsonBenchmark,
   AnalysisJsonFile,
   AnalysisJsonFinding,
   AnalysisJsonGraph,
+  AnalysisJsonHistoryPoint,
+  AnalysisJsonHotspot,
   AnalysisJsonMetadata,
   AnalysisJsonMetrics,
   AnalysisJsonOptions,
   AnalysisJsonProject,
+  AnalysisJsonRemediationAction,
   AnalysisJsonSummary,
 } from "./analysis-json.js";
 export {
@@ -17,3 +22,4 @@ export {
   validateAnalysisJson,
   writeAnalysisJson,
 } from "./analysis-json.js";
+export { parseAnalysisBenchmarkProfile } from "./benchmark-profile.js";

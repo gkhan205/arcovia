@@ -29,6 +29,7 @@ export type {
   ScoreBreakdown,
   ScoreCategory,
   ScoreConfidence,
+  ScoreContributor,
   ScoreDeduction,
   ScoreGrade,
   ScoreMetadata,

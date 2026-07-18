@@ -1,7 +1,7 @@
 import type { RuleCategory } from "./rule.js";
 
 /** Letter grade assigned to an architecture health score. */
-export type ScoreGrade = "A+" | "A" | "B+" | "B" | "C+" | "C" | "D" | "F";
+export type ScoreGrade = "A+" | "A" | "A-" | "B+" | "B" | "C+" | "C" | "D" | "F";
 
 /** Standard categories included in architecture health scoring. */
 export type ScoreCategory =
@@ -29,11 +29,31 @@ export interface ScoreDeduction {
   readonly penalty: number;
   readonly reason: string;
   readonly ruleId: string;
+  /** Risk multiplier assigned to the rule before repeat-deduction decay. */
+  readonly weight: number;
+}
+
+/** A ranked, human-readable factor behind an architecture score. */
+export interface ScoreContributor {
+  readonly detail: string;
+  /** Points removed from the overall score by this contributor. */
+  readonly impact: number;
+  readonly label: string;
+  readonly type: "category" | "critical-risk" | "maintenance-burden";
 }
 
 /** Strengths and weaknesses used to explain score results. */
 export interface ScoreBreakdown {
+  /** Score calculated from the weighted category health before critical-risk adjustment. */
+  readonly categoryWeightedScore: number;
+  /** Capped project-wide adjustment for accumulated warning and informational debt. */
+  readonly maintenanceBurden: number;
+  /** Bounded adjustment which prevents critical findings from being diluted across categories. */
+  readonly criticalRiskAdjustment: number;
+  readonly contributors: readonly ScoreContributor[];
   readonly deductions: readonly ScoreDeduction[];
+  /** Project-specific sentence that explains the overall result. */
+  readonly summary: string;
   readonly strengths: readonly string[];
   readonly weaknesses: readonly string[];
 }

@@ -112,7 +112,16 @@ function createReport(): AnalysisReport {
       overall: 91,
       grade: "A",
       categories: [],
-      breakdown: { deductions: [], strengths: [], weaknesses: [] },
+      breakdown: {
+        categoryWeightedScore: 91,
+        criticalRiskAdjustment: 0,
+        maintenanceBurden: 0,
+        contributors: [],
+        deductions: [],
+        strengths: [],
+        summary: "test",
+        weaknesses: [],
+      },
       metadata: {
         confidence: { reason: "test", value: 100 },
         criticalFindings: 0,

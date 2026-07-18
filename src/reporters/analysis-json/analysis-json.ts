@@ -113,6 +113,55 @@ export interface AnalysisJsonGraph {
   readonly statistics: GraphStatistics;
 }
 
+/** A file-level cluster of findings used to prioritize remediation work. */
+export interface AnalysisJsonHotspot {
+  /** Category-weighted recovery if every displayed finding in this file is resolved. */
+  readonly estimatedScoreRecovery: number;
+  readonly file: string;
+  readonly findingCount: number;
+  readonly priorityScore: number;
+  readonly recommendation: string;
+  readonly severityCounts: Readonly<Record<AnalysisJsonFinding["severity"], number>>;
+}
+
+/** An empirical score distribution supplied by an Arcovia benchmark corpus. */
+export interface AnalysisBenchmarkProfile {
+  readonly cohort: string;
+  readonly framework?: string;
+  readonly sampleSize: number;
+  readonly score: {
+    readonly p25: number;
+    readonly p50: number;
+    readonly p75: number;
+  };
+  readonly version: string;
+}
+
+export interface AnalysisJsonBenchmark {
+  readonly cohort?: string;
+  readonly medianScore?: number;
+  readonly percentileBand?: "above-median" | "below-median" | "middle-half" | "top-quartile";
+  readonly reason?: string;
+  readonly sampleSize?: number;
+  readonly status: "available" | "unavailable";
+  readonly version?: string;
+}
+
+/** A compact historical score point retained from prior Arcovia analyses. */
+export interface AnalysisJsonHistoryPoint {
+  readonly generatedAt: string;
+  readonly overallScore: number;
+  readonly reportPath?: string;
+}
+
+/** A concrete remediation action derived from a project hotspot. */
+export interface AnalysisJsonRemediationAction {
+  readonly estimatedScoreRecovery: number;
+  readonly file: string;
+  readonly findingCount: number;
+  readonly recommendation: string;
+}
+
 /** Public, versioned analysis artifact. The property order is part of its diff-friendly contract. */
 export interface AnalysisJsonFile {
   readonly metadata: AnalysisJsonMetadata;
@@ -123,15 +172,23 @@ export interface AnalysisJsonFile {
   readonly findings: readonly AnalysisJsonFinding[];
   readonly graph: AnalysisJsonGraph;
   readonly analysis: {
+    readonly architectureSummary: string;
+    readonly benchmark: AnalysisJsonBenchmark;
+    readonly hotspots: readonly AnalysisJsonHotspot[];
+    readonly history: readonly AnalysisJsonHistoryPoint[];
     readonly risks: readonly string[];
+    readonly quickWins: readonly AnalysisJsonRemediationAction[];
+    readonly roadmap: readonly AnalysisJsonRemediationAction[];
     readonly strengths: readonly string[];
     readonly weaknesses: readonly string[];
   };
 }
 
 export interface AnalysisJsonOptions {
+  readonly benchmark?: AnalysisBenchmarkProfile;
   readonly cliVersion: string;
   readonly engineVersion: string;
+  readonly history?: readonly AnalysisJsonHistoryPoint[];
   readonly nodeVersion: string;
   readonly os: string;
   readonly platform: string;
@@ -244,6 +301,12 @@ function toGraph(report: AnalysisReport): AnalysisJsonGraph {
 
 function toScore(score: ArchitectureScore): ArchitectureScore {
   const breakdown = {
+    categoryWeightedScore: score.breakdown.categoryWeightedScore,
+    criticalRiskAdjustment: score.breakdown.criticalRiskAdjustment,
+    maintenanceBurden: score.breakdown.maintenanceBurden,
+    contributors: score.breakdown.contributors
+      .map((contributor) => ({ ...contributor }))
+      .sort((left, right) => right.impact - left.impact || compareText(left.label, right.label)),
     deductions: score.breakdown.deductions
       .map((deduction) => ({
         category: deduction.category,
@@ -251,12 +314,14 @@ function toScore(score: ArchitectureScore): ArchitectureScore {
         penalty: deduction.penalty,
         reason: deduction.reason,
         ruleId: deduction.ruleId,
+        weight: deduction.weight,
       }))
       .sort(
         (left, right) =>
           compareText(left.category, right.category) || compareText(left.ruleId, right.ruleId),
       ),
     strengths: [...score.breakdown.strengths].sort(compareText),
+    summary: score.breakdown.summary,
     weaknesses: [...score.breakdown.weaknesses].sort(compareText),
   };
   const baseScore = {
@@ -295,6 +360,144 @@ function countFindings(findings: readonly Finding[], severity: Finding["severity
   return findings.filter((finding) => finding.severity === severity).length;
 }
 
+function createHotspots(
+  findings: readonly AnalysisJsonFinding[],
+  score: ArchitectureScore,
+): readonly AnalysisJsonHotspot[] {
+  const grouped = new Map<string, AnalysisJsonFinding[]>();
+  for (const finding of findings) {
+    grouped.set(finding.location.file, [...(grouped.get(finding.location.file) ?? []), finding]);
+  }
+  const severityWeight: Readonly<Record<AnalysisJsonFinding["severity"], number>> = {
+    critical: 100,
+    error: 40,
+    warning: 10,
+    info: 1,
+  };
+  return [...grouped.entries()]
+    .map(([file, fileFindings]) => {
+      const sorted = [...fileFindings].sort(
+        (left, right) => severityRank(left.severity) - severityRank(right.severity),
+      );
+      const severityCounts: Record<AnalysisJsonFinding["severity"], number> = {
+        critical: 0,
+        error: 0,
+        info: 0,
+        warning: 0,
+      };
+      for (const finding of fileFindings) severityCounts[finding.severity] += 1;
+      const topFinding = sorted[0];
+      const estimatedScoreRecovery = round(
+        fileFindings.reduce((total, finding) => {
+          const deduction = score.breakdown.deductions.find(
+            (candidate) =>
+              candidate.ruleId === finding.ruleId && candidate.category === finding.category,
+          );
+          const category = score.categories.find(
+            (candidate) => candidate.category === finding.category,
+          );
+          if (deduction === undefined || category === undefined || deduction.findingCount === 0) {
+            return total;
+          }
+          return total + (deduction.penalty / deduction.findingCount) * (category.weight / 100);
+        }, 0),
+      );
+      return {
+        estimatedScoreRecovery,
+        file,
+        findingCount: fileFindings.length,
+        priorityScore: fileFindings.reduce(
+          (total, finding) => total + severityWeight[finding.severity],
+          0,
+        ),
+        recommendation: topFinding?.recommendation ?? "Review this file's architecture signals.",
+        severityCounts,
+      };
+    })
+    .sort(
+      (left, right) =>
+        right.priorityScore - left.priorityScore ||
+        right.findingCount - left.findingCount ||
+        compareText(left.file, right.file),
+    );
+}
+
+function createBenchmark(
+  score: number,
+  framework: string,
+  profile: AnalysisBenchmarkProfile | undefined,
+): AnalysisJsonBenchmark {
+  if (profile === undefined) {
+    return {
+      reason: "No empirical benchmark corpus was supplied for this analysis.",
+      status: "unavailable",
+    };
+  }
+  if (profile.framework !== undefined && profile.framework !== framework) {
+    return {
+      reason: `Benchmark framework ${profile.framework} does not match project framework ${framework}.`,
+      status: "unavailable",
+    };
+  }
+  const percentileBand =
+    score >= profile.score.p75
+      ? "top-quartile"
+      : score >= profile.score.p50
+        ? "above-median"
+        : score >= profile.score.p25
+          ? "middle-half"
+          : "below-median";
+  return {
+    cohort: profile.cohort,
+    medianScore: profile.score.p50,
+    percentileBand,
+    sampleSize: profile.sampleSize,
+    status: "available",
+    version: profile.version,
+  };
+}
+
+function createActionPlan(
+  hotspots: readonly AnalysisJsonHotspot[],
+  findings: readonly AnalysisJsonFinding[],
+): {
+  readonly quickWins: readonly AnalysisJsonRemediationAction[];
+  readonly roadmap: readonly AnalysisJsonRemediationAction[];
+} {
+  const quickRules = new Set(["duplicate-imports", "orphan-module", "unused-export"]);
+  const quickFiles = new Set(
+    findings
+      .filter((finding) => quickRules.has(finding.ruleId))
+      .map((finding) => finding.location.file),
+  );
+  const toAction = (hotspot: AnalysisJsonHotspot): AnalysisJsonRemediationAction => ({
+    estimatedScoreRecovery: hotspot.estimatedScoreRecovery,
+    file: hotspot.file,
+    findingCount: hotspot.findingCount,
+    recommendation: hotspot.recommendation,
+  });
+  const quickWins = hotspots
+    .filter((hotspot) => quickFiles.has(hotspot.file))
+    .slice(0, 5)
+    .map(toAction);
+  const quickFileSet = new Set(quickWins.map((action) => action.file));
+  return {
+    quickWins,
+    roadmap: hotspots
+      .filter((hotspot) => !quickFileSet.has(hotspot.file))
+      .slice(0, 3)
+      .map(toAction),
+  };
+}
+
+function severityRank(severity: AnalysisJsonFinding["severity"]): number {
+  return SEVERITY_ORDER[severity];
+}
+
+function round(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
 /** Converts an internal AnalysisReport to the public AAF representation without writing it. */
 export function createAnalysisJson(
   report: AnalysisReport,
@@ -317,6 +520,8 @@ export function createAnalysisJson(
     )
     .map((finding) => finding.title)
     .sort(compareText);
+  const hotspots = createHotspots(findings, report.score);
+  const actionPlan = createActionPlan(hotspots, findings);
 
   return {
     metadata: {
@@ -366,7 +571,18 @@ export function createAnalysisJson(
     findings,
     graph: toGraph(report),
     analysis: {
+      architectureSummary: report.score.breakdown.summary,
+      benchmark: createBenchmark(report.score.overall, report.project.framework, options.benchmark),
+      hotspots,
+      history: [
+        ...(options.history ?? []),
+        { generatedAt: report.generatedAt, overallScore: report.score.overall },
+      ]
+        .sort((left, right) => left.generatedAt.localeCompare(right.generatedAt))
+        .slice(-8),
       risks,
+      quickWins: actionPlan.quickWins,
+      roadmap: actionPlan.roadmap,
       strengths: [...report.score.breakdown.strengths].sort(compareText),
       weaknesses: [...report.score.breakdown.weaknesses].sort(compareText),
     },

@@ -4,12 +4,18 @@ import { fileURLToPath } from "node:url";
 import { build } from "vite";
 
 import type { AnalysisReport } from "../../domain/index.js";
-import { createAnalysisJson } from "../analysis-json/index.js";
+import {
+  type AnalysisBenchmarkProfile,
+  type AnalysisJsonHistoryPoint,
+  createAnalysisJson,
+} from "../analysis-json/index.js";
 
 /** Runtime metadata embedded into a self-contained HTML report. */
 export interface HtmlReporterOptions {
+  readonly benchmark?: AnalysisBenchmarkProfile;
   readonly cliVersion?: string;
   readonly engineVersion?: string;
+  readonly history?: readonly AnalysisJsonHistoryPoint[];
   readonly nodeVersion?: string;
   readonly os?: string;
   readonly platform?: string;
@@ -33,8 +39,10 @@ function resolveAppEntry(): string {
 export class HtmlReporter {
   public async render(report: AnalysisReport, options: HtmlReporterOptions = {}): Promise<string> {
     const artifact = createAnalysisJson(report, {
+      ...(options.benchmark === undefined ? {} : { benchmark: options.benchmark }),
       cliVersion: options.cliVersion ?? report.version,
       engineVersion: options.engineVersion ?? report.version,
+      ...(options.history === undefined ? {} : { history: options.history }),
       nodeVersion: options.nodeVersion ?? report.metadata.nodeVersion,
       os: options.os ?? "unknown",
       platform: options.platform ?? "unknown",

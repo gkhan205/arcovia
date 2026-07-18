@@ -14,7 +14,6 @@ declare global {
 const SEVERITIES = ["critical", "error", "warning", "info"] as const;
 type Severity = (typeof SEVERITIES)[number];
 type Page = "dashboard" | "findings" | "graph" | "metrics" | "recommendations";
-type GraphView = "graph" | "list";
 type AnalysisGraphNode = AnalysisJsonFile["graph"]["nodes"][number];
 
 interface GraphGroup {
@@ -36,26 +35,13 @@ function severityRank(severity: Severity): number {
 
 function App({ analysis }: { readonly analysis: AnalysisJsonFile }) {
   const [page, setPage] = useState<Page>("dashboard");
-  const [query, setQuery] = useState("");
   const [severity, setSeverity] = useState<Severity | "all">("all");
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const findings = useMemo(
     () =>
       analysis.findings
         .filter((finding) => {
-          const text = [
-            finding.ruleId,
-            finding.title,
-            finding.description,
-            finding.recommendation,
-            finding.location.file,
-          ]
-            .join(" ")
-            .toLowerCase();
-          return (
-            (severity === "all" || finding.severity === severity) &&
-            text.includes(query.toLowerCase())
-          );
+          return severity === "all" || finding.severity === severity;
         })
         .sort(
           (left, right) =>
@@ -64,7 +50,7 @@ function App({ analysis }: { readonly analysis: AnalysisJsonFile }) {
             left.location.file.localeCompare(right.location.file) ||
             left.location.line - right.location.line,
         ),
-    [analysis.findings, query, severity],
+    [analysis.findings, severity],
   );
   const pages: readonly { readonly id: Page; readonly label: string }[] = [
     { id: "dashboard", label: "Overview" },
@@ -114,14 +100,6 @@ function App({ analysis }: { readonly analysis: AnalysisJsonFile }) {
             <strong>{analysis.score.overall}</strong>
             <span>{analysis.score.grade}</span>
           </section>
-          <label className="search">
-            <span>Search</span>
-            <input
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="rules, files, recommendations"
-              value={query}
-            />
-          </label>
           <button
             aria-label="Toggle color theme"
             className="theme-toggle"
@@ -163,17 +141,117 @@ function Dashboard({
           <span className="out-of">/100</span>
         </div>
         <h2>Grade {analysis.score.grade}</h2>
-        <p>
-          {analysis.score.overall >= 75
-            ? "A resilient foundation with focused opportunities."
-            : "Structural debt needs focused attention."}
-        </p>
+        <p>{analysis.score.breakdown.summary}</p>
+        <div className="score-formula">
+          <span>Category health {analysis.score.breakdown.categoryWeightedScore}</span>
+          <b>→</b>
+          <span>
+            {analysis.score.breakdown.maintenanceBurden > 0
+              ? `Maintenance burden −${analysis.score.breakdown.maintenanceBurden}`
+              : "No maintenance-burden adjustment"}
+          </span>
+          <b>→</b>
+          <span>
+            {analysis.score.breakdown.criticalRiskAdjustment > 0
+              ? `Critical risk −${analysis.score.breakdown.criticalRiskAdjustment}`
+              : "No critical-risk adjustment"}
+          </span>
+          <b>→</b>
+          <strong>Score {analysis.score.overall}</strong>
+        </div>
       </section>
       <section className="stat-grid" aria-label="Project summary">
         <Stat label="Findings" value={analysis.summary.totalFindings} />
         <Stat label="Files" value={analysis.project.sourceFiles} />
         <Stat label="Modules" value={analysis.metrics.modules} />
         <Stat label="Dependencies" value={analysis.metrics.dependencies} />
+      </section>
+      <section className="two-column">
+        <section className="panel score-drivers">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">WHY THIS GRADE</p>
+              <h2>Largest score contributors</h2>
+            </div>
+          </div>
+          {analysis.score.breakdown.contributors.length === 0 ? (
+            <p className="notice">No score deductions were recorded.</p>
+          ) : (
+            analysis.score.breakdown.contributors.slice(0, 5).map((contributor) => (
+              <div className="score-driver" key={`${contributor.type}:${contributor.label}`}>
+                <div>
+                  <strong>{contributor.label}</strong>
+                  <small>{contributor.detail}</small>
+                </div>
+                <em>−{contributor.impact}</em>
+              </div>
+            ))
+          )}
+        </section>
+        <section className="panel strengths">
+          <p className="eyebrow">CONFIRMED STRENGTHS</p>
+          <h2>What is already working</h2>
+          <ul>
+            {analysis.score.breakdown.strengths.map((strength) => (
+              <li key={strength}>{strength}</li>
+            ))}
+          </ul>
+        </section>
+      </section>
+      <section className="panel benchmark-panel">
+        <p className="eyebrow">PEER BENCHMARK</p>
+        {analysis.analysis.benchmark.status === "available" ? (
+          <>
+            <h2>
+              {analysis.analysis.benchmark.sampleSize === 0
+                ? `${formatPercentileBand(analysis.analysis.benchmark.percentileBand)} Arcovia quality band`
+                : `${formatPercentileBand(analysis.analysis.benchmark.percentileBand)} against peers`}
+            </h2>
+            <p>
+              {analysis.analysis.benchmark.sampleSize === 0
+                ? `${analysis.analysis.benchmark.cohort} · reference score ${analysis.analysis.benchmark.medianScore}`
+                : `${analysis.analysis.benchmark.cohort} · ${analysis.analysis.benchmark.sampleSize} projects · median score ${analysis.analysis.benchmark.medianScore}`}
+            </p>
+          </>
+        ) : (
+          <>
+            <h2>Peer comparison unavailable</h2>
+            <p>{analysis.analysis.benchmark.reason}</p>
+          </>
+        )}
+      </section>
+      <section className="panel timeline-panel">
+        <p className="eyebrow">SCORE TIMELINE</p>
+        <h2>Architecture health over time</h2>
+        {analysis.analysis.history.length > 1 ? (
+          <>
+            <p className="notice">
+              {formatTrend(analysis.analysis.history)} since the previous analysis. Select an
+              archived point to open that report.
+            </p>
+            <ol className="timeline">
+              {analysis.analysis.history.map((point) => (
+                <li key={point.generatedAt}>
+                  {point.reportPath === undefined ? (
+                    <div>
+                      <strong>{point.overallScore}</strong>
+                      <span>{new Date(point.generatedAt).toLocaleDateString()}</span>
+                    </div>
+                  ) : (
+                    <a href={point.reportPath} rel="noreferrer" target="_blank">
+                      <strong>{point.overallScore}</strong>
+                      <span>{new Date(point.generatedAt).toLocaleDateString()}</span>
+                    </a>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </>
+        ) : (
+          <p className="notice">
+            Run Arcovia again over time to build this project’s score timeline.
+          </p>
+        )}
       </section>
       <section className="panel">
         <div className="section-heading">
@@ -269,7 +347,7 @@ function Findings({
         ))}
         {findings.length > 250 && (
           <p className="notice">
-            Showing the first 250 results. Refine your search to focus the explorer.
+            Showing the first 250 results. Choose a severity filter to focus the explorer.
           </p>
         )}
       </section>
@@ -308,7 +386,6 @@ function FindingCard({ finding }: { readonly finding: AnalysisJsonFinding }) {
   );
 }
 function Graph({ analysis }: { readonly analysis: AnalysisJsonFile }) {
-  const [view, setView] = useState<GraphView>("graph");
   const [selectedGroupId, setSelectedGroupId] = useState<string | undefined>();
   const [selectedNodeId, setSelectedNodeId] = useState<string | undefined>();
   const [isFocused, setIsFocused] = useState(false);
@@ -349,159 +426,125 @@ function Graph({ analysis }: { readonly analysis: AnalysisJsonFile }) {
             {analysis.graph.nodes.length} nodes · {analysis.graph.edges.length} edges
           </h2>
         </div>
-        <fieldset className="view-switch">
-          <legend>Dependency graph view</legend>
-          <button
-            aria-pressed={view === "graph"}
-            className={view === "graph" ? "selected" : ""}
-            onClick={() => setView("graph")}
-            type="button"
-          >
-            Graph view
-          </button>
-          <button
-            aria-pressed={view === "list"}
-            className={view === "list" ? "selected" : ""}
-            onClick={() => setView("list")}
-            type="button"
-          >
-            List view
-          </button>
-        </fieldset>
       </div>
-      {view === "graph" ? (
-        <section className="dependency-map">
-          <svg
-            aria-label="Grouped dependency graph. Select a group to inspect its modules."
-            className="dependency-canvas"
-            role="img"
-            viewBox="0 0 1180 680"
-          >
-            <defs>
-              <marker
-                id="dependency-arrow"
-                markerHeight="6"
-                markerWidth="6"
-                orient="auto-start-reverse"
-                refX="7"
-                refY="3"
+      <section className="dependency-map">
+        <svg
+          aria-label="Grouped dependency graph. Select a group to inspect its modules."
+          className="dependency-canvas"
+          role="img"
+          viewBox="0 0 1180 680"
+        >
+          <defs>
+            <marker
+              id="dependency-arrow"
+              markerHeight="6"
+              markerWidth="6"
+              orient="auto-start-reverse"
+              refX="7"
+              refY="3"
+            >
+              <path className="graph-arrow" d="M0,0 L0,6 L7,3 z" />
+            </marker>
+          </defs>
+          {groupEdges.map((edge) => {
+            const source = positionsByGroupId.get(edge.source);
+            const target = positionsByGroupId.get(edge.target);
+            if (source === undefined || target === undefined) return null;
+            const isConnectedToSelection =
+              selectedGroupId === edge.source || selectedGroupId === edge.target;
+            return (
+              <line
+                className={
+                  isFocused && !isConnectedToSelection
+                    ? "graph-edge dimmed"
+                    : isConnectedToSelection
+                      ? "graph-edge selected"
+                      : "graph-edge"
+                }
+                key={edge.id}
+                markerEnd="url(#dependency-arrow)"
+                strokeWidth={Math.min(4, 1 + edge.count / 2)}
+                x1={source.x + 70}
+                x2={target.x + 70}
+                y1={source.y + 32}
+                y2={target.y + 32}
+              />
+            );
+          })}
+          {positionedGroups.map((positioned) => {
+            const { group } = positioned;
+            const isSelected = group.id === selectedGroupId;
+            return (
+              <foreignObject
+                className={isFocused && !isSelected ? "graph-group dimmed" : "graph-group"}
+                height="64"
+                key={group.id}
+                width="140"
+                x={positioned.x}
+                y={positioned.y}
               >
-                <path className="graph-arrow" d="M0,0 L0,6 L7,3 z" />
-              </marker>
-            </defs>
-            {groupEdges.map((edge) => {
-              const source = positionsByGroupId.get(edge.source);
-              const target = positionsByGroupId.get(edge.target);
-              if (source === undefined || target === undefined) return null;
-              const isConnectedToSelection =
-                selectedGroupId === edge.source || selectedGroupId === edge.target;
-              return (
-                <line
-                  className={
-                    isFocused && !isConnectedToSelection
-                      ? "graph-edge dimmed"
-                      : isConnectedToSelection
-                        ? "graph-edge selected"
-                        : "graph-edge"
-                  }
-                  key={edge.id}
-                  markerEnd="url(#dependency-arrow)"
-                  strokeWidth={Math.min(4, 1 + edge.count / 2)}
-                  x1={source.x + 70}
-                  x2={target.x + 70}
-                  y1={source.y + 32}
-                  y2={target.y + 32}
-                />
-              );
-            })}
-            {positionedGroups.map((positioned) => {
-              const { group } = positioned;
-              const isSelected = group.id === selectedGroupId;
-              return (
-                <foreignObject
-                  className={isFocused && !isSelected ? "graph-group dimmed" : "graph-group"}
-                  height="64"
-                  key={group.id}
-                  width="140"
-                  x={positioned.x}
-                  y={positioned.y}
-                >
-                  <button
-                    aria-pressed={isSelected}
-                    className={`graph-group-button ${group.kind} ${isSelected ? "selected" : ""}`}
-                    onClick={() => selectGroup(group.id)}
-                    type="button"
-                  >
-                    <span>{group.label}</span>
-                    <small>
-                      {group.nodes.length} {group.kind === "external" ? "packages" : "modules"}
-                    </small>
-                  </button>
-                </foreignObject>
-              );
-            })}
-          </svg>
-          <aside className="graph-inspector">
-            {selectedGroup === undefined ? (
-              <>
-                <p>Select a group to inspect its modules and direct dependencies.</p>
-                <dl>
-                  <dt>Blue</dt>
-                  <dd>User code groups</dd>
-                  <dt>Amber</dt>
-                  <dd>External packages</dd>
-                  <dt>Red</dt>
-                  <dd>Unresolved imports</dd>
-                </dl>
-              </>
-            ) : (
-              <>
-                <p className="eyebrow">SELECTED GROUP</p>
-                <h3>{selectedGroup.label}</h3>
                 <button
-                  className={isFocused ? "focus-toggle selected" : "focus-toggle"}
-                  onClick={() => setIsFocused(!isFocused)}
+                  aria-pressed={isSelected}
+                  className={`graph-group-button ${group.kind} ${isSelected ? "selected" : ""}`}
+                  onClick={() => selectGroup(group.id)}
                   type="button"
                 >
-                  {isFocused ? "Show all groups" : "Focus connections"}
+                  <span>{group.label}</span>
+                  <small>
+                    {group.nodes.length} {group.kind === "external" ? "packages" : "modules"}
+                  </small>
                 </button>
-                <div className="module-picker">
-                  {selectedGroup.nodes.map((node) => (
-                    <button
-                      className={node.id === selectedNodeId ? "selected" : ""}
-                      key={node.id}
-                      onClick={() => setSelectedNodeId(node.id)}
-                      type="button"
-                    >
-                      {node.label}
-                    </button>
-                  ))}
-                </div>
-                {selectedNode !== undefined && (
-                  <section className="node-details">
-                    <strong>{selectedNode.label}</strong>
-                    <small>{selectedNode.path}</small>
-                    <p>{selectedNodeEdges.length} direct connections</p>
-                  </section>
-                )}
-              </>
-            )}
-          </aside>
-        </section>
-      ) : (
-        <section className="graph-list">
-          {groups.map((group) => (
-            <article key={group.id}>
-              <span className={`node-dot ${group.kind === "external" ? "package" : group.kind}`} />
-              <div>
-                <strong>{group.label}</strong>
-                <small>{group.nodes.map((node) => node.path).join(" · ")}</small>
+              </foreignObject>
+            );
+          })}
+        </svg>
+        <aside className="graph-inspector">
+          {selectedGroup === undefined ? (
+            <>
+              <p>Select a group to inspect its modules and direct dependencies.</p>
+              <dl>
+                <dt>Blue</dt>
+                <dd>User code groups</dd>
+                <dt>Amber</dt>
+                <dd>External packages</dd>
+                <dt>Red</dt>
+                <dd>Unresolved imports</dd>
+              </dl>
+            </>
+          ) : (
+            <>
+              <p className="eyebrow">SELECTED GROUP</p>
+              <h3>{selectedGroup.label}</h3>
+              <button
+                className={isFocused ? "focus-toggle selected" : "focus-toggle"}
+                onClick={() => setIsFocused(!isFocused)}
+                type="button"
+              >
+                {isFocused ? "Show all groups" : "Focus connections"}
+              </button>
+              <div className="module-picker">
+                {selectedGroup.nodes.map((node) => (
+                  <button
+                    className={node.id === selectedNodeId ? "selected" : ""}
+                    key={node.id}
+                    onClick={() => setSelectedNodeId(node.id)}
+                    type="button"
+                  >
+                    {node.label}
+                  </button>
+                ))}
               </div>
-              <em>{group.nodes.length} nodes</em>
-            </article>
-          ))}
-        </section>
-      )}
+              {selectedNode !== undefined && (
+                <section className="node-details">
+                  <strong>{selectedNode.label}</strong>
+                  <small>{selectedNode.path}</small>
+                  <p>{selectedNodeEdges.length} direct connections</p>
+                </section>
+              )}
+            </>
+          )}
+        </aside>
+      </section>
     </>
   );
 }
@@ -591,14 +634,70 @@ function Recommendations({ analysis }: { readonly analysis: AnalysisJsonFile }) 
   return (
     <>
       <p className="eyebrow">PRIORITY ACTIONS</p>
-      <h2>Recommended next moves</h2>
-      <ol className="recommendations">
-        {[...new Set(analysis.findings.map((finding) => finding.recommendation))]
-          .slice(0, 6)
-          .map((recommendation) => (
-            <li key={recommendation}>{recommendation}</li>
+      <h2>Fix first</h2>
+      {analysis.analysis.quickWins.length > 0 && (
+        <section className="action-plan">
+          <p className="eyebrow">QUICK WINS</p>
+          {analysis.analysis.quickWins.map((action) => (
+            <article className="action" key={action.file}>
+              <div>
+                <strong>{action.file}</strong>
+                <p>{action.recommendation}</p>
+              </div>
+              <span>+{action.estimatedScoreRecovery}</span>
+            </article>
           ))}
-      </ol>
+        </section>
+      )}
+      <p className="notice">
+        Files are ranked by severity and the number of related findings. Resolve the highest-ranked
+        hotspots first to remove the most risk with the fewest context switches.
+      </p>
+      <section className="hotspots">
+        {analysis.analysis.hotspots.slice(0, 8).map((hotspot, index) => (
+          <article className="hotspot" key={hotspot.file}>
+            <span className="hotspot-rank">{String(index + 1).padStart(2, "0")}</span>
+            <div>
+              <strong>{hotspot.file}</strong>
+              <small>
+                {hotspot.findingCount} finding{hotspot.findingCount === 1 ? "" : "s"} · priority{" "}
+                {hotspot.priorityScore}
+              </small>
+              <p>{hotspot.recommendation}</p>
+              <small className="recovery">
+                Estimated category recovery +{hotspot.estimatedScoreRecovery} if all listed signals
+                are resolved
+              </small>
+            </div>
+            <div className="hotspot-severity">
+              {SEVERITIES.filter((severity) => hotspot.severityCounts[severity] > 0).map(
+                (severity) => (
+                  <Badge key={severity} severity={severity} />
+                ),
+              )}
+            </div>
+          </article>
+        ))}
+        {analysis.analysis.hotspots.length === 0 && (
+          <p className="notice">No remediation hotspots were detected.</p>
+        )}
+      </section>
+      {analysis.analysis.roadmap.length > 0 && (
+        <section className="action-plan roadmap">
+          <p className="eyebrow">REFACTORING ROADMAP</p>
+          <h3>Three structural moves</h3>
+          {analysis.analysis.roadmap.map((action, index) => (
+            <article className="action" key={action.file}>
+              <div>
+                <small>Sprint {index + 1}</small>
+                <strong>{action.file}</strong>
+                <p>{action.recommendation}</p>
+              </div>
+              <span>+{action.estimatedScoreRecovery}</span>
+            </article>
+          ))}
+        </section>
+      )}
     </>
   );
 }
@@ -615,6 +714,26 @@ function Badge({ severity }: { readonly severity: Severity }) {
 }
 function formatDuration(duration: number): string {
   return duration >= 1000 ? `${(duration / 1000).toFixed(1)}s` : `${duration}ms`;
+}
+function formatPercentileBand(
+  percentileBand: AnalysisJsonFile["analysis"]["benchmark"]["percentileBand"],
+): string {
+  return (
+    {
+      "above-median": "Above median",
+      "below-median": "Below median",
+      "middle-half": "Within the middle half",
+      "top-quartile": "Top quartile",
+    }[percentileBand ?? "middle-half"] ?? "Peer comparison"
+  );
+}
+
+function formatTrend(history: AnalysisJsonFile["analysis"]["history"]): string {
+  const current = history.at(-1);
+  const previous = history.at(-2);
+  if (current === undefined || previous === undefined) return "Score unchanged";
+  const delta = Math.round((current.overallScore - previous.overallScore) * 100) / 100;
+  return delta === 0 ? "Score unchanged" : `${delta > 0 ? "+" : ""}${delta} points`;
 }
 
 const analysis = window.__ARCOVIA_ANALYSIS__;
