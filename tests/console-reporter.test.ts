@@ -121,19 +121,19 @@ function createReport(findingCount = 2): AnalysisReport {
 }
 
 describe("ConsoleReporter", () => {
-  it("renders sections in the documented order with sorted top findings", () => {
+  it("renders the compact product summary with priority-ordered top issues", () => {
     const output = new ConsoleReporter().render(createReport(), {
       colors: false,
       unicode: false,
     }).stdout;
 
-    expect(output).toContain("CLI 0.1.0 · Engine 0.1.0");
-    expect(output.indexOf("Project")).toBeLessThan(output.indexOf("Architecture Score"));
-    expect(output.indexOf("Architecture Score")).toBeLessThan(output.indexOf("Summary"));
-    expect(output.indexOf("Summary")).toBeLessThan(output.indexOf("Top Findings"));
-    expect(output.indexOf("Top Findings")).toBeLessThan(output.indexOf("Category Breakdown"));
-    expect(output.indexOf("[CRITICAL]")).toBeLessThan(output.indexOf("[WARNING]"));
-    expect(output.indexOf("architecture")).toBeLessThan(output.indexOf("components"));
+    expect(output).toContain("🦉 Arcovia v0.1.0");
+    expect(output.indexOf("Project")).toBeLessThan(output.indexOf("Architecture Health"));
+    expect(output.indexOf("Architecture Health")).toBeLessThan(output.indexOf("Summary"));
+    expect(output.indexOf("Summary")).toBeLessThan(output.indexOf("Top Issues"));
+    expect(output).toContain("Name          sample-app");
+    expect(output).toContain("Framework     React");
+    expect(output.indexOf("Finding 1")).toBeLessThan(output.indexOf("Finding 0"));
     expect(output.includes(`${String.fromCharCode(27)}[`)).toBe(false);
   });
 
@@ -148,7 +148,7 @@ describe("ConsoleReporter", () => {
     expect(output).not.toContain("Healthy Architecture");
   });
 
-  it("supports deterministic compact, verbose, JSON, and CI output", () => {
+  it("supports deterministic compact, JSON, and CI output", () => {
     const reporter = new ConsoleReporter();
     const report = createReport(8);
     const compact = reporter.render(report, {
@@ -156,24 +156,22 @@ describe("ConsoleReporter", () => {
       compact: true,
       unicode: false,
     }).stdout;
-    const verbose = reporter.render(report, { colors: false, verbose: true }).stdout;
     const json = reporter.render(report, { json: true }).stdout;
     const ci = reporter.render(report, { ci: true }).stdout;
 
     expect(compact).toBe("X 8 findings\nScore: 86\nCritical: 2\nWarnings: 2\n");
-    expect(verbose.match(/Evidence:/gu)).toHaveLength(8);
-    expect(verbose).toContain("Metrics");
     expect(JSON.parse(json)).toMatchObject({
       metadata: { schema: "https://schema.arcovia.dev/analysis/v1" },
     });
     expect(ci.includes(`${String.fromCharCode(27)}[`)).toBe(false);
+    expect(ci).toContain("Architecture Health");
   });
 
   it("limits default finding output while preserving performance for large reports", () => {
     const output = new ConsoleReporter().render(createReport(1000), { colors: false }).stdout;
 
-    expect(output.match(/\[.*\]/gu)).toHaveLength(5);
-    expect(output).toContain("Total Findings: 1000");
+    expect(output.match(/src\/file-/gu)).toHaveLength(3);
+    expect(output).toContain("Findings       1000");
   });
 
   it("sends recoverable parser diagnostics to stderr", () => {

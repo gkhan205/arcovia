@@ -322,7 +322,9 @@ describe("Analysis JSON", () => {
 
     expect(html).toContain("<!doctype html>");
     expect(html).toContain("Content-Security-Policy");
+    expect(html).toContain('rel="icon" type="image/png" href="data:image/png;base64,');
     expect(html).toContain("window.__ARCOVIA_ANALYSIS__=");
+    expect(html).toContain("window.__ARCOVIA_BRAND__=");
     expect(html).toContain("ARCHITECTURE HEALTH");
     expect(html).toContain("DEPENDENCY MAP");
     expect(html).not.toContain("Graph view");

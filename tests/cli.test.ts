@@ -116,9 +116,11 @@ describe("Arcovia CLI", () => {
       "start:Validating project path",
       "success:Validated project path",
       "start:Analyzing project",
-      "success:Analysis complete",
+      "success:Analysis completed in 0 ms",
     ]);
-    expect(output).toEqual([`Analysis complete: ${resolve("/workspace", "apps/web")}\n`]);
+    expect(output.join("")).toContain("🦉 Arcovia v0.1.0");
+    expect(output.join("")).toContain("Full interactive report");
+    expect(output.join("")).toContain("file:///workspace/reports/report.html");
   });
 
   it("supports the analyse alias and generates reports by default", async () => {
@@ -144,6 +146,19 @@ describe("Arcovia CLI", () => {
         verbose: false,
       },
     ]);
+  });
+
+  it("opens the generated HTML report when --open is requested", async () => {
+    const opened: string[] = [];
+    const { dependencies, output } = createDependencies({
+      openReport: async (url) => {
+        opened.push(url);
+      },
+    });
+
+    expect(await run(["node", "arcovia", "analyze", "--open"], dependencies)).toBe(0);
+    expect(opened).toEqual(["file:///workspace/.arcovia-report/report.html"]);
+    expect(output.join("")).toContain("arcovia analyze . --open");
   });
 
   it("uses Arcovia global quality bands when benchmark is passed without a profile path", async () => {

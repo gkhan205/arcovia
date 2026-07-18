@@ -18,6 +18,7 @@
   },
   "files": [
     "dist",
+    "images",
     "src/reporters/html/app"
   ],
   "scripts": {

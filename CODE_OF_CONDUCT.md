@@ -2,8 +2,7 @@
 
 ## Our commitment
 
-We want participation in the Arcovia community to be welcoming, constructive, and respectful for
-everyone, regardless of background, identity, experience, or point of view.
+We want participation in the Arcovia community to be welcoming, constructive, and respectful for everyone, regardless of background, identity, experience, or point of view.
 
 ## Expected behavior
 
@@ -20,6 +19,4 @@ everyone, regardless of background, identity, experience, or point of view.
 
 ## Enforcement
 
-Report conduct concerns privately to the maintainer at ghazikhan205@gmail.com. Reports will be
-reviewed promptly and handled with appropriate discretion. Responses may include a warning,
-temporary restriction, or removal from project spaces.
+Use GitHub's report-content controls to report harassment, abuse, or other conduct concerns privately. Reports are handled under GitHub's Community Guidelines and may result in a warning, temporary restriction, or removal from project spaces.

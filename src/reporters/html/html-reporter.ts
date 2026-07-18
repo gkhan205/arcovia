@@ -1,4 +1,4 @@
-import { writeFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
 import { build } from "vite";
@@ -33,6 +33,18 @@ function resolveAppEntry(): string {
   return currentFile.includes("/dist/")
     ? fileURLToPath(new URL("../src/reporters/html/app/main.tsx", import.meta.url))
     : fileURLToPath(new URL("./app/main.tsx", import.meta.url));
+}
+
+function resolveBrandAsset(name: "icon.png" | "logo.png"): string {
+  const currentFile = fileURLToPath(import.meta.url);
+  return currentFile.includes("/dist/")
+    ? fileURLToPath(new URL(`../images/${name}`, import.meta.url))
+    : fileURLToPath(new URL(`../../../images/${name}`, import.meta.url));
+}
+
+async function toPngDataUrl(name: "icon.png" | "logo.png"): Promise<string> {
+  const image = await readFile(resolveBrandAsset(name));
+  return `data:image/png;base64,${image.toString("base64")}`;
 }
 
 /** Bundles the React application and embeds it with sanitized analysis data in one offline HTML file. */
@@ -81,6 +93,7 @@ export class HtmlReporter {
     }
     const css =
       typeof stylesheet.source === "string" ? stylesheet.source : stylesheet.source.toString();
+    const [icon, logo] = await Promise.all([toPngDataUrl("icon.png"), toPngDataUrl("logo.png")]);
     return `<!doctype html>
 <html lang="en">
 <head>
@@ -88,11 +101,13 @@ export class HtmlReporter {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
   <title>Arcovia · ${escapeHtml(artifact.project.name)}</title>
+  <link rel="icon" type="image/png" href="${icon}">
   <style>${css}</style>
 </head>
 <body>
   <div id="root"></div>
   <script>window.__ARCOVIA_ANALYSIS__=${escapeJsonForScript(artifact)};</script>
+  <script>window.__ARCOVIA_BRAND__=${escapeJsonForScript({ logo })};</script>
   <script>${script.code}</script>
 </body>
 </html>`;

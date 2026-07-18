@@ -1,20 +1,8 @@
 import type { AnalysisReport } from "../../domain/index.js";
+import { Severity } from "../../domain/index.js";
 import { serializeAnalysisJson } from "../analysis-json/index.js";
 
-import {
-  renderBanner,
-  renderCategoryBreakdown,
-  renderFindings,
-  renderMetrics,
-  renderOutputFiles,
-  renderParserErrors,
-  renderProject,
-  renderRecommendations,
-  renderScore,
-  renderSummary,
-  renderTiming,
-  sortFindings,
-} from "./sections.js";
+import { renderParserErrors, sortFindings } from "./sections.js";
 import { createConsoleTheme } from "./theme.js";
 
 /** Presentation settings for the Console Reporter. */
@@ -25,8 +13,10 @@ export interface ConsoleReporterOptions {
   readonly compact?: boolean;
   readonly json?: boolean;
   readonly outputFiles?: readonly string[];
+  readonly reportUrl?: string;
   readonly showRecommendations?: boolean;
   readonly showTiming?: boolean;
+  readonly showOpenCommand?: boolean;
   readonly unicode?: boolean;
   readonly verbose?: boolean;
 }
@@ -37,7 +27,7 @@ export interface ConsoleReportOutput {
   readonly stdout: string;
 }
 
-const DEFAULT_TOP_FINDINGS = 5;
+const DEFAULT_TOP_FINDINGS = 3;
 
 /** Renders an immutable analysis report without scanning, scoring, or writing files. */
 export class ConsoleReporter {
@@ -61,29 +51,88 @@ export class ConsoleReporter {
     );
     if (options.compact) return { stderr: "", stdout: this.renderCompact(report, theme) };
 
-    const orderedFindings = sortFindings(report.findings);
-    const findings = options.verbose
-      ? orderedFindings
-      : orderedFindings.slice(0, DEFAULT_TOP_FINDINGS);
-    const sections = [
-      renderBanner(report, options.cliVersion ?? report.version, theme),
-      renderProject(report),
-      renderScore(report.score, theme),
-      renderSummary(report.findings, theme),
-      renderFindings(findings, theme, options.verbose ?? false),
-      ...(options.verbose ? [renderMetrics(report)] : []),
-      renderCategoryBreakdown(report.score),
-      ...(options.showRecommendations === false ? [] : [renderRecommendations(report.findings)]),
-      ...(options.outputFiles === undefined || options.outputFiles.length === 0
-        ? []
-        : [renderOutputFiles(options.outputFiles)]),
-      ...(options.showTiming === false ? [] : [renderTiming(report)]),
-    ];
     const parserErrors = renderParserErrors(report);
     return {
       stderr: parserErrors ? `${parserErrors}\n` : "",
-      stdout: `${sections.join("\n\n")}\n`,
+      stdout: `${this.renderFull(report, options.cliVersion ?? report.version, theme, options)}\n`,
     };
+  }
+
+  private renderFull(
+    report: AnalysisReport,
+    cliVersion: string,
+    theme: ReturnType<typeof createConsoleTheme>,
+    options: ConsoleReporterOptions,
+  ): string {
+    const count = (severity: Severity) =>
+      report.findings.filter((finding) => finding.severity === severity).length;
+    const issues = sortFindings(report.findings)
+      .filter((finding) => finding.severity !== Severity.Info)
+      .slice(0, DEFAULT_TOP_FINDINGS);
+    const divider = "─".repeat(63);
+    const framework = report.project.framework === "next" ? "Next.js" : "React";
+    const health =
+      report.score.overall >= 90
+        ? "Excellent Architecture"
+        : report.score.overall >= 80
+          ? "Strong Architecture"
+          : report.score.overall >= 70
+            ? "Architecture Needs Attention"
+            : "Architecture Needs Work";
+    const topIssues =
+      issues.length === 0
+        ? ["No critical, error, or warning findings."]
+        : issues.flatMap((finding) => [
+            `${finding.severity === Severity.Warning ? theme.symbols.warning : theme.symbols.failure} ${finding.title}`,
+            `  ${finding.location.file}`,
+            "",
+          ]);
+    const reportLink =
+      options.reportUrl === undefined
+        ? []
+        : [
+            "Full interactive report",
+            "",
+            options.reportUrl,
+            ...(options.showOpenCommand
+              ? ["", "Open automatically", "", "arcovia analyze . --open"]
+              : []),
+          ];
+
+    return [
+      "╭──────────────────────────────────────────────────────────────╮",
+      "│                                                              │",
+      `│   🦉 Arcovia v${cliVersion.padEnd(46)}│`,
+      "│   Architecture Intelligence for React Teams                  │",
+      "│                                                              │",
+      "╰──────────────────────────────────────────────────────────────╯",
+      "",
+      "Project",
+      divider,
+      `Name          ${report.project.name}`,
+      `Framework     ${framework}`,
+      `Files         ${report.project.metadata.sourceFiles}`,
+      `Modules       ${report.model.modules.length}`,
+      "",
+      "Architecture Health",
+      divider,
+      "",
+      `        ${report.score.overall.toFixed(2)} / 100      Grade ${report.score.grade}`,
+      "",
+      `        ${health}`,
+      "",
+      "Summary",
+      divider,
+      `Findings       ${report.findings.length}`,
+      `Warnings       ${count(Severity.Warning)}`,
+      `Errors         ${count(Severity.Error)}`,
+      `Critical       ${count(Severity.Critical)}`,
+      "",
+      "Top Issues",
+      divider,
+      ...topIssues,
+      ...reportLink,
+    ].join("\n");
   }
 
   private renderCompact(

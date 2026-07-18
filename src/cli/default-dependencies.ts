@@ -1,4 +1,6 @@
+import { execFile } from "node:child_process";
 import { stat } from "node:fs/promises";
+import { promisify } from "node:util";
 
 import { loadConfiguration } from "../config/index.js";
 import { AnalysisBuilder, CoreEngine, ReporterPipeline } from "../core/index.js";
@@ -14,6 +16,8 @@ import type { CliDependencies } from "./dependencies.js";
 import type { AnalysisReport, AnalyzeProjectInput, CommandRunner } from "./services/index.js";
 import { OraSpinner } from "./ui/index.js";
 
+const executeFile = promisify(execFile);
+
 class CoreCommandRunner implements CommandRunner {
   public constructor(
     private readonly engine: CoreEngine,
@@ -28,7 +32,7 @@ class CoreCommandRunner implements CommandRunner {
     });
     await this.pipeline.execute(result.report, {
       ...(input.benchmark === undefined ? {} : { benchmark: input.benchmark }),
-      console: true,
+      console: false,
       html: input.generateHtml,
       json: input.generateJson,
       ...(input.outputPath === undefined ? {} : { outputDirectory: input.outputPath }),
@@ -69,6 +73,15 @@ export function createDefaultDependencies(): CliDependencies {
     currentDirectory: () => process.cwd(),
     fileSystem: { stat },
     logger,
+    openReport: async (url) => {
+      const [command, argumentsList] =
+        process.platform === "darwin"
+          ? ["open", [url]]
+          : process.platform === "win32"
+            ? ["cmd", ["/c", "start", "", url]]
+            : ["xdg-open", [url]];
+      await executeFile(command, argumentsList, { windowsHide: true });
+    },
     standardError: process.stderr,
     standardOutput: process.stdout,
     version: "0.1.0",

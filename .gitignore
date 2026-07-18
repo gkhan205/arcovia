@@ -9,3 +9,4 @@ docs
 examples
 reports
 .pnpm-store
+.DS_Store

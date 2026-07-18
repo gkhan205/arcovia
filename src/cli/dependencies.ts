@@ -27,6 +27,8 @@ export interface CliDependencies {
   readonly currentDirectory: () => string;
   readonly fileSystem: FileSystem;
   readonly logger: Logger;
+  /** Opens a completed HTML report in the system's default browser. */
+  readonly openReport?: (url: string) => Promise<void>;
   readonly standardError: OutputWriter;
   readonly standardOutput: OutputWriter;
   readonly version: string;

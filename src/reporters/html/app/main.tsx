@@ -8,6 +8,7 @@ import "./styles.css";
 declare global {
   interface Window {
     __ARCOVIA_ANALYSIS__?: AnalysisJsonFile;
+    __ARCOVIA_BRAND__?: { readonly logo: string };
   }
 }
 
@@ -64,8 +65,14 @@ function App({ analysis }: { readonly analysis: AnalysisJsonFile }) {
     <main className="shell" data-theme={theme}>
       <aside className="rail" aria-label="Report navigation">
         <div className="brand">
-          <span>arcovia</span>
-          <small>architecture observatory</small>
+          {window.__ARCOVIA_BRAND__?.logo !== undefined ? (
+            <img alt="Arcovia Architecture Observatory" src={window.__ARCOVIA_BRAND__.logo} />
+          ) : (
+            <>
+              <span>arcovia</span>
+              <small>architecture observatory</small>
+            </>
+          )}
         </div>
         <nav>
           {pages.map((item) => (

@@ -1,10 +1,10 @@
+![arcovia banner](/images/banner.png)
+
 # Arcovia
 
 **Frontend architecture intelligence for React and Next.js applications.**
 
-Arcovia scans a project, builds its dependency model, evaluates deterministic architecture rules,
-and produces an actionable architecture report. It is designed to answer three practical
-questions:
+Arcovia scans a project, builds its dependency model, evaluates deterministic architecture rules, and produces an actionable architecture report. It is designed to answer three practical questions:
 
 1. Is this frontend architecture healthy?
 2. Why did it receive this score?
@@ -74,6 +74,9 @@ arcovia analyze . --output ./reports
 # Generate only selected artifacts
 arcovia analyze . --html
 arcovia analyze . --json
+
+# Generate the HTML report and open it in your default browser
+arcovia analyze . --open
 
 # Show more diagnostic detail in the terminal
 arcovia analyze . --verbose
@@ -231,7 +234,8 @@ percentage.
 Arcovia is available under the [MIT License](LICENSE). Before contributing, read
 [CONTRIBUTING.md](CONTRIBUTING.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), and
 [SECURITY.md](SECURITY.md). General help is covered in [SUPPORT.md](SUPPORT.md), and released
-changes are recorded in [CHANGELOG.md](CHANGELOG.md).
+changes are recorded in [CHANGELOG.md](CHANGELOG.md). See [TRADEMARKS.md](TRADEMARKS.md)
+for project brand use and logo/icon provenance.
 
 ## Development
 

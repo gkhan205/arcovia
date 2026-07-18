@@ -81,7 +81,7 @@ export class ReporterPipeline {
       this.dependencies.output.writeOutput(consoleOutput.stdout);
       if (consoleOutput.stderr) this.dependencies.output.writeError(consoleOutput.stderr);
     }
-    if (options.html) {
+    if (options.html && (options.console ?? true)) {
       this.dependencies.output.writeOutput(`Open HTML report: ${pathToFileURL(htmlPath).href}\n`);
     }
   }

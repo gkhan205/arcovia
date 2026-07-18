@@ -1,9 +1,11 @@
 import { readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import type { Command } from "commander";
 
 import {
   type AnalysisBenchmarkProfile,
+  ConsoleReporter,
   parseAnalysisBenchmarkProfile,
 } from "../../reporters/index.js";
 import { createCliConfiguration } from "../config.js";
@@ -18,6 +20,7 @@ export interface AnalyzeOptions {
   readonly html?: boolean;
   readonly json?: boolean;
   readonly markdown?: boolean;
+  readonly open?: boolean;
   readonly output?: string;
   readonly verbose?: boolean;
 }
@@ -31,6 +34,7 @@ export function register(program: Command, dependencies: CliDependencies): void 
     .option("--html", "generate an HTML report")
     .option("--json", "generate an analysis JSON artifact")
     .option("--markdown", "generate a Markdown report")
+    .option("--open", "open the generated HTML report in your default browser")
     .option("--ai", "include an optional AI review")
     .option(
       "--benchmark [path]",
@@ -43,6 +47,7 @@ export function register(program: Command, dependencies: CliDependencies): void 
       const cliConfiguration = createCliConfiguration(dependencies.configuration, options);
       const resolvedProjectPath = resolve(dependencies.currentDirectory(), projectPath ?? ".");
       const generateDefaultReports = !options.html && !options.json && !options.markdown;
+      const generateHtml = options.html || options.open || generateDefaultReports;
       const outputPath =
         options.output === undefined
           ? join(resolvedProjectPath, ".arcovia-report")
@@ -63,20 +68,42 @@ export function register(program: Command, dependencies: CliDependencies): void 
         const report = await dependencies.commandRunner.analyze({
           ai: options.ai ?? false,
           ...(benchmark === undefined ? {} : { benchmark }),
-          generateHtml: options.html ?? generateDefaultReports,
+          generateHtml,
           generateJson: options.json ?? generateDefaultReports,
           generateMarkdown: options.markdown ?? false,
           outputPath,
           projectPath: resolvedProjectPath,
           verbose: cliConfiguration.verbose,
         });
-        progress.succeed("Analysis complete");
-        dependencies.standardOutput.write(`Analysis complete: ${report.project.root}\n`);
+        progress.succeed(`Analysis completed in ${formatDuration(report.metadata.duration)}`);
+        const reportUrl = generateHtml
+          ? pathToFileURL(join(outputPath, "report.html")).href
+          : undefined;
+        const output = new ConsoleReporter().render(report, {
+          cliVersion: dependencies.version,
+          ...(reportUrl === undefined ? {} : { reportUrl, showOpenCommand: true }),
+        });
+        dependencies.standardOutput.write(output.stdout);
+        if (output.stderr) dependencies.standardError.write(output.stderr);
+        if (options.open && reportUrl !== undefined && dependencies.openReport !== undefined) {
+          try {
+            await dependencies.openReport(reportUrl);
+          } catch (error) {
+            const message = error instanceof Error ? error.message : "Unknown error";
+            dependencies.standardError.write(
+              `Report generated but could not be opened: ${message}\n`,
+            );
+          }
+        }
       } catch (error) {
         progress.fail("Analysis failed");
         throw error;
       }
     });
+}
+
+function formatDuration(duration: number): string {
+  return duration >= 1000 ? `${(duration / 1000).toFixed(1)} s` : `${Math.round(duration)} ms`;
 }
 
 const ARCOVIA_GLOBAL_BENCHMARK: AnalysisBenchmarkProfile = {
