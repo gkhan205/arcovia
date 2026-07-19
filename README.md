@@ -1,8 +1,10 @@
-![arcovia banner](/images/banner.png)
+<!-- ![npm](https://img.shields.io/npm/v/arcovia) ![downloads](https://img.shields.io/npm/dm/arcovia) ![license](https://img.shields.io/github/license/gkhan205/arcovia) ![Node](https://img.shields.io/badge/node-22+-green) -->
+
+![arcovia banner](/assets/banner.png)
 
 # Arcovia
 
-**Frontend architecture intelligence for React and Next.js applications.**
+**Understand, measure, and improve the architecture of React and Next.js applications.**
 
 Arcovia scans a project, builds its dependency model, evaluates deterministic architecture rules, and produces an actionable architecture report. It is designed to answer three practical questions:
 
@@ -12,7 +14,50 @@ Arcovia scans a project, builds its dependency model, evaluates deterministic ar
 
 Arcovia's findings and scores come entirely from deterministic static analysis.
 
-## What you get
+## Quick start
+
+Run Arcovia from the project you want to inspect:
+
+```bash
+npx arcovia analyze .
+```
+
+![CLI Output](/assets/cli-output.png)
+
+## Why Arcovia?
+
+| Traditional tools | Arcovia |
+| --- | --- |
+| Lint warnings | Architecture intelligence |
+| File-level checks | Whole-project analysis |
+| Hard to prioritize | Prioritized hotspots and Quick Wins |
+| No architectural score | Explainable architecture score |
+| Static diagnostics | Actionable roadmap |
+
+## Supported frameworks
+
+- ✅ React
+- ✅ Next.js
+- ✅ Vite
+- 🧪 Remix (experimental React-compatible analysis)
+
+## Features
+
+- ✅ Architecture Score
+- ✅ Dependency Graph
+- ✅ Hotspots
+- ✅ Quick Wins
+- ✅ Architecture Timeline
+- ✅ Offline HTML Report
+- ✅ JSON Report
+- ✅ Deterministic Rules
+- ✅ No Cloud Required
+
+## Privacy
+
+Arcovia runs entirely on your machine. No source code leaves your computer, no account is required, and Arcovia does not collect telemetry.
+
+## Reports
 
 Each analysis produces a terminal summary plus portable reports:
 
@@ -30,14 +75,6 @@ The HTML report includes:
 - Optional peer benchmark context
 - Score timeline assembled from previous archived Arcovia reports
 
-## Quick start
-
-Run Arcovia from the project you want to inspect:
-
-```bash
-npx arcovia analyze .
-```
-
 Or install it globally:
 
 ```bash
@@ -53,8 +90,7 @@ By default, Arcovia writes reports to `.arcovia-report` in the analyzed project:
   report.html
 ```
 
-Open `report.html` in any browser. It is self-contained: no server, account, or network
-connection is required.
+Open `report.html` in any browser. It is self-contained: no server, account, or network connection is required.
 
 ## Commands
 
@@ -78,9 +114,6 @@ arcovia analyze . --json
 # Generate the HTML report and open it in your default browser
 arcovia analyze . --open
 
-# Show more diagnostic detail in the terminal
-arcovia analyze . --verbose
-
 # Check the CLI environment
 arcovia doctor
 ```
@@ -99,14 +132,11 @@ analysis:
     report-2026-07-18T12-00-00-000Z.html
 ```
 
-The next report reads archived analysis artifacts and displays up to eight historical score points
-in the HTML timeline. Run Arcovia periodically—weekly or in CI—to make architectural progress
-visible over time.
+The next report reads archived analysis artifacts and displays up to eight historical score points in the HTML timeline. Run Arcovia periodically - weekly or in CI to make architectural progress visible over time.
 
 ## Scoring
 
-Arcovia does not simply count findings. The final score is designed to reward healthy categories
-while ensuring real architectural debt stays visible.
+Arcovia does not simply count findings. The final score is designed to reward healthy categories while ensuring real architectural debt stays visible.
 
 ```text
 100
@@ -131,14 +161,11 @@ Rule findings affect these weighted categories:
 | Context | 5% |
 | Routes | 5% |
 
-Repeated findings use diminishing penalties and certain hygiene rules have caps, so hundreds of
-near-identical signals cannot dominate a result.
+Repeated findings use diminishing penalties and certain hygiene rules have caps, so hundreds of near-identical signals cannot dominate a result.
 
 ### Maintenance burden
 
-Large collections of warnings, errors, and informational debt apply a separate capped adjustment.
-This prevents a project with many actionable findings from appearing flawless while avoiding the
-opposite failure mode of making it look irredeemable.
+Large collections of warnings, errors, and informational debt apply a separate capped adjustment. This prevents a project with many actionable findings from appearing flawless while avoiding the opposite failure mode of making it look irredeemable.
 
 ### Critical risk
 
@@ -159,9 +186,7 @@ The report shows this separately from category health.
 | 40–54.99 | D |
 | Below 40 | F |
 
-An estimated recovery shown in a Hotspot, Quick Win, or roadmap item is only the relevant
-category-weighted deduction. It is a planning estimate, not a guarantee of the final score after
-a refactor.
+An estimated recovery shown in a Hotspot, Quick Win, or roadmap item is only the relevant category weighted deduction. It is a planning estimate, not a guarantee of the final score after a refactor.
 
 ## Findings Arcovia currently evaluates
 
@@ -176,9 +201,7 @@ Examples include:
 - High fan-in and fan-out modules
 - Deep dependency chains
 
-Framework-aware behavior avoids common Next.js false positives, including route handler methods
-such as `GET` and `POST`, route-page exports, and Next.js metadata exports such as
-`generateMetadata`, `generateStaticParams`, and `revalidate`.
+Framework-aware behavior avoids common Next.js false positives, including route handler methods such as `GET` and `POST`, route-page exports, and Next.js metadata exports such as `generateMetadata`, `generateStaticParams`, and `revalidate`.
 
 ## Benchmarking
 
@@ -188,8 +211,7 @@ Run the built-in Arcovia quality-band baseline with no file:
 arcovia analyze . --benchmark
 ```
 
-This gives threshold context, not a claim about peer percentiles. Supply a versioned benchmark
-profile for real peer context:
+This gives threshold context, not a claim about peer percentiles. Supply a versioned benchmark profile for real peer context:
 
 ```bash
 arcovia analyze . --benchmark ./arcovia-benchmark.json
@@ -220,9 +242,7 @@ Arcovia compares the final score with the distribution:
 | At or above p25 | Middle half |
 | Below p25 | Below median |
 
-The benchmark framework must match the scanned project. If no profile is supplied, or it does not
-match, the report explicitly says that peer comparison is unavailable rather than inventing a
-percentage.
+The benchmark framework must match the scanned project. If no profile is supplied, or it does not match, the report explicitly says that peer comparison is unavailable rather than inventing a percentage.
 
 ## Requirements
 
@@ -266,3 +286,20 @@ src/
   score/        architecture scoring
   reporters/    terminal, JSON, and offline HTML rendering
 ```
+
+## Roadmap
+
+- GitHub Action
+- VS Code extension
+- Report comparison
+- Expanded trend analysis
+- Team dashboard
+- AI Architecture Coach (cloud-based, opt-in)
+
+## Try Arcovia
+
+```bash
+npx arcovia analyze .
+```
+
+If you find a bug or have an idea, we’d love your feedback through [GitHub Issues](https://github.com/gkhan205/arcovia/issues) and [GitHub Discussions](https://github.com/gkhan205/arcovia/discussions).

@@ -18,6 +18,10 @@ import { OraSpinner } from "./ui/index.js";
 
 const executeFile = promisify(execFile);
 
+declare const __ARCOVIA_VERSION__: string | undefined;
+
+const ARCOVIA_VERSION = typeof __ARCOVIA_VERSION__ === "string" ? __ARCOVIA_VERSION__ : "0.1.0-dev";
+
 class CoreCommandRunner implements CommandRunner {
   public constructor(
     private readonly engine: CoreEngine,
@@ -48,7 +52,10 @@ export function createDefaultDependencies(): CliDependencies {
   const registry = new RuleRegistry();
   registerInitialRules(registry);
   const engine = new CoreEngine({
-    analysisBuilder: new AnalysisBuilder({ nodeVersion: process.version, version: "0.1.0" }),
+    analysisBuilder: new AnalysisBuilder({
+      nodeVersion: process.version,
+      version: ARCOVIA_VERSION,
+    }),
     graphBuilder: new ArchitectureGraphBuilder(),
     parser: new ProjectParser(),
     ruleConfiguration: { rules: {} },
@@ -84,6 +91,6 @@ export function createDefaultDependencies(): CliDependencies {
     },
     standardError: process.stderr,
     standardOutput: process.stdout,
-    version: "0.1.0",
+    version: ARCOVIA_VERSION,
   };
 }

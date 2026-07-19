@@ -38,8 +38,8 @@ function resolveAppEntry(): string {
 function resolveBrandAsset(name: "icon.png" | "logo.png"): string {
   const currentFile = fileURLToPath(import.meta.url);
   return currentFile.includes("/dist/")
-    ? fileURLToPath(new URL(`../images/${name}`, import.meta.url))
-    : fileURLToPath(new URL(`../../../images/${name}`, import.meta.url));
+    ? fileURLToPath(new URL(`../assets/${name}`, import.meta.url))
+    : fileURLToPath(new URL(`../../../assets/${name}`, import.meta.url));
 }
 
 async function toPngDataUrl(name: "icon.png" | "logo.png"): Promise<string> {

@@ -10,6 +10,19 @@
   "bin": {
     "arcovia": "./dist/cli.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gkhan205/arcovia.git"
+  },
+  "keywords": [
+    "react",
+    "nextjs",
+    "architecture",
+    "analysis",
+    "cli",
+    "typescript",
+    "dependency-graph"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -18,7 +31,7 @@
   },
   "files": [
     "dist",
-    "images",
+    "assets",
     "src/reporters/html/app"
   ],
   "scripts": {
@@ -40,7 +53,6 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@clack/prompts": "^0.11.0",
     "@tanstack/react-table": "^8.21.3",
     "commander": "^14.0.0",
     "lucide-react": "^0.468.0",

@@ -128,10 +128,9 @@ describe("ConsoleReporter", () => {
     }).stdout;
 
     expect(output).toContain("🦉 Arcovia v0.1.0");
-    expect(output.indexOf("Project")).toBeLessThan(output.indexOf("Architecture Health"));
-    expect(output.indexOf("Architecture Health")).toBeLessThan(output.indexOf("Summary"));
-    expect(output.indexOf("Summary")).toBeLessThan(output.indexOf("Top Issues"));
-    expect(output).toContain("Name          sample-app");
+    expect(output.indexOf("\nProject\n")).toBeLessThan(output.indexOf("\nArchitecture\n"));
+    expect(output.indexOf("\nArchitecture\n")).toBeLessThan(output.indexOf("\nFindings\n"));
+    expect(output.indexOf("\nFindings\n")).toBeLessThan(output.indexOf("\nTop Priorities\n"));
     expect(output).toContain("Framework     React");
     expect(output.indexOf("Finding 1")).toBeLessThan(output.indexOf("Finding 0"));
     expect(output.includes(`${String.fromCharCode(27)}[`)).toBe(false);
@@ -164,14 +163,14 @@ describe("ConsoleReporter", () => {
       metadata: { schema: "https://schema.arcovia.dev/analysis/v1" },
     });
     expect(ci.includes(`${String.fromCharCode(27)}[`)).toBe(false);
-    expect(ci).toContain("Architecture Health");
+    expect(ci).toContain("Architecture");
   });
 
   it("limits default finding output while preserving performance for large reports", () => {
     const output = new ConsoleReporter().render(createReport(1000), { colors: false }).stdout;
 
-    expect(output.match(/src\/file-/gu)).toHaveLength(3);
-    expect(output).toContain("Findings       1000");
+    expect(output.match(/file-\d+\.tsx/gu)).toHaveLength(3);
+    expect(output).toContain("Total          1000");
   });
 
   it("sends recoverable parser diagnostics to stderr", () => {

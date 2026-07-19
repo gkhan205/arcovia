@@ -103,7 +103,6 @@ describe("Arcovia CLI", () => {
     expect(exitCode).toBe(0);
     expect(calls).toEqual([
       {
-        ai: false,
         generateHtml: true,
         generateJson: true,
         generateMarkdown: false,
@@ -113,14 +112,15 @@ describe("Arcovia CLI", () => {
       },
     ]);
     expect(spinner.messages).toEqual([
-      "start:Validating project path",
-      "success:Validated project path",
-      "start:Analyzing project",
+      "start:Validating project",
+      "success:Project validated",
+      "start:Scanning project",
+      "success:Scanned 0 files (0 modules)",
       "success:Analysis completed in 0 ms",
     ]);
     expect(output.join("")).toContain("🦉 Arcovia v0.1.0");
-    expect(output.join("")).toContain("Full interactive report");
-    expect(output.join("")).toContain("file:///workspace/reports/report.html");
+    expect(output.join("")).toContain("Report         /workspace/reports/report.html");
+    expect(output.join("")).toContain("Click the HTML report to open it in your browser.");
   });
 
   it("supports the analyse alias and generates reports by default", async () => {
@@ -137,7 +137,6 @@ describe("Arcovia CLI", () => {
     expect(await run(["node", "arcovia", "analyse"], dependencies)).toBe(0);
     expect(calls).toEqual([
       {
-        ai: false,
         generateHtml: true,
         generateJson: true,
         generateMarkdown: false,
@@ -158,7 +157,7 @@ describe("Arcovia CLI", () => {
 
     expect(await run(["node", "arcovia", "analyze", "--open"], dependencies)).toBe(0);
     expect(opened).toEqual(["file:///workspace/.arcovia-report/report.html"]);
-    expect(output.join("")).toContain("arcovia analyze . --open");
+    expect(output.join("")).toContain("Opening HTML report in your default browser...");
   });
 
   it("uses Arcovia global quality bands when benchmark is passed without a profile path", async () => {

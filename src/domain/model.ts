@@ -32,7 +32,7 @@ export interface Route {
   readonly path: string;
 }
 
-/** A declared source symbol retained for future consumers such as AI review. */
+/** A declared source symbol retained for report generation and rule evaluation. */
 export interface Symbol {
   readonly fileId: string;
   readonly id: string;

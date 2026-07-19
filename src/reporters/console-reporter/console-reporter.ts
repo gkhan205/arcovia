@@ -12,11 +12,11 @@ export interface ConsoleReporterOptions {
   readonly colors?: boolean;
   readonly compact?: boolean;
   readonly json?: boolean;
+  readonly htmlReportPath?: string;
+  readonly openReport?: boolean;
   readonly outputFiles?: readonly string[];
-  readonly reportUrl?: string;
   readonly showRecommendations?: boolean;
   readonly showTiming?: boolean;
-  readonly showOpenCommand?: boolean;
   readonly unicode?: boolean;
   readonly verbose?: boolean;
 }
@@ -69,7 +69,7 @@ export class ConsoleReporter {
     const issues = sortFindings(report.findings)
       .filter((finding) => finding.severity !== Severity.Info)
       .slice(0, DEFAULT_TOP_FINDINGS);
-    const divider = "─".repeat(63);
+    const divider = "─".repeat(46);
     const framework = report.project.framework === "next" ? "Next.js" : "React";
     const health =
       report.score.overall >= 90
@@ -79,59 +79,55 @@ export class ConsoleReporter {
           : report.score.overall >= 70
             ? "Architecture Needs Attention"
             : "Architecture Needs Work";
-    const topIssues =
+    const topPriorities =
       issues.length === 0
         ? ["No critical, error, or warning findings."]
-        : issues.flatMap((finding) => [
-            `${finding.severity === Severity.Warning ? theme.symbols.warning : theme.symbols.failure} ${finding.title}`,
-            `  ${finding.location.file}`,
-            "",
+        : issues.flatMap((finding, index) => [
+            `• ${actionableFindingTitle(finding.title)}`,
+            `  ↳ ${finding.location.file}`,
+            ...(index === issues.length - 1 ? [] : [""]),
           ]);
-    const reportLink =
-      options.reportUrl === undefined
+    const reports = [
+      ...(options.htmlReportPath === undefined ? [] : [`Report         ${options.htmlReportPath}`]),
+      ...(options.htmlReportPath === undefined
         ? []
         : [
-            "Full interactive report",
             "",
-            options.reportUrl,
-            ...(options.showOpenCommand
-              ? ["", "Open automatically", "", "arcovia analyze . --open"]
-              : []),
-          ];
+            options.openReport
+              ? `${theme.symbols.success} Opening HTML report in your default browser...`
+              : "Click the HTML report to open it in your browser.",
+          ]),
+    ];
+    const reportSection = reports.length === 0 ? [] : ["", ...reports];
 
     return [
-      "╭──────────────────────────────────────────────────────────────╮",
-      "│                                                              │",
-      `│   🦉 Arcovia v${cliVersion.padEnd(46)}│`,
-      "│   Architecture Intelligence for React Teams                  │",
-      "│                                                              │",
-      "╰──────────────────────────────────────────────────────────────╯",
+      divider,
+      `🦉 Arcovia v${cliVersion}`,
+      "Architecture Intelligence for React & Next.js",
+      divider,
       "",
       "Project",
-      divider,
-      `Name          ${report.project.name}`,
       `Framework     ${framework}`,
       `Files         ${report.project.metadata.sourceFiles}`,
       `Modules       ${report.model.modules.length}`,
       "",
-      "Architecture Health",
-      divider,
-      "",
-      `        ${report.score.overall.toFixed(2)} / 100      Grade ${report.score.grade}`,
-      "",
-      `        ${health}`,
+      "Architecture",
+      `Score          ${report.score.overall.toFixed(2)} / 100`,
+      `Grade          ${report.score.grade}`,
+      `Status         ${health}`,
       "",
       "Summary",
-      divider,
-      `Findings       ${report.findings.length}`,
-      `Warnings       ${count(Severity.Warning)}`,
-      `Errors         ${count(Severity.Error)}`,
-      `Critical       ${count(Severity.Critical)}`,
+      ...wrapText(createSummary(report), 62),
       "",
-      "Top Issues",
-      divider,
-      ...topIssues,
-      ...reportLink,
+      "Findings",
+      `Total          ${report.findings.length}`,
+      `Critical       ${count(Severity.Critical)}`,
+      `Warnings       ${count(Severity.Warning)}`,
+      `Info           ${count(Severity.Info)}`,
+      "",
+      "Top Priorities",
+      ...topPriorities,
+      ...reportSection,
     ].join("\n");
   }
 
@@ -149,4 +145,35 @@ export class ConsoleReporter {
       "",
     ].join("\n");
   }
+}
+
+function actionableFindingTitle(title: string): string {
+  return title === "JSX nesting is too deep" ? "Reduce JSX nesting" : title;
+}
+
+function createSummary(report: AnalysisReport): string {
+  if (report.score.overall >= 85) {
+    return "Well-structured project with opportunities to simplify component complexity and improve maintainability.";
+  }
+  if (report.score.overall >= 70) {
+    return "Solid architectural foundation with opportunities to reduce complexity and improve maintainability.";
+  }
+  return report.score.breakdown.summary;
+}
+
+function wrapText(value: string, width: number): readonly string[] {
+  const words = value.split(/\s+/u);
+  const lines: string[] = [];
+  let line = "";
+  for (const word of words) {
+    const next = line.length === 0 ? word : `${line} ${word}`;
+    if (next.length > width && line.length > 0) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = next;
+    }
+  }
+  if (line.length > 0) lines.push(line);
+  return lines;
 }

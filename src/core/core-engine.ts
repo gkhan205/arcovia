@@ -63,7 +63,7 @@ export class CoreEngine {
       score: 0,
       total: 0,
     };
-    logger.info(`Pipeline started for ${options.projectPath}.`);
+    logger.debug(`Pipeline started for ${options.projectPath}.`);
     logger.debug(`Pipeline configuration: debug=${configuration.debug}.`);
 
     const project = await this.stage("scan", "Scanning project", options, logger, timings, () =>
@@ -122,7 +122,7 @@ export class CoreEngine {
         } satisfies AnalysisBuilderInput),
     );
     timings.total = performance.now() - startedAt;
-    logger.info(`Pipeline complete in ${Math.round(timings.total)}ms.`);
+    logger.debug(`Pipeline complete in ${Math.round(timings.total)}ms.`);
     return Object.freeze({
       report,
       statistics: Object.freeze({

@@ -8,8 +8,8 @@ describe("createConfiguration", () => {
     expect(createConfiguration({ ARCOVIA_DEBUG: "FALSE" }).debug).toBe(false);
   });
 
-  it("trims API keys and excludes empty values", () => {
-    expect(createConfiguration({ OPENAI_API_KEY: "  key  " }).openAiApiKey).toBe("key");
-    expect(createConfiguration({ OPENAI_API_KEY: "  " }).openAiApiKey).toBeUndefined();
+  it("enables debug only for an explicit true value", () => {
+    expect(createConfiguration({ ARCOVIA_DEBUG: "true" }).debug).toBe(true);
+    expect(createConfiguration({ ARCOVIA_DEBUG: "false" }).debug).toBe(false);
   });
 });

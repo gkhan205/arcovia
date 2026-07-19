@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { join, resolve } from "node:path";
+import { isAbsolute, join, relative, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import type { Command } from "commander";
 
@@ -15,7 +15,6 @@ import { Progress } from "../ui/index.js";
 
 /** Options accepted by the analyze command. */
 export interface AnalyzeOptions {
-  readonly ai?: boolean;
   readonly benchmark?: string | true;
   readonly html?: boolean;
   readonly json?: boolean;
@@ -35,7 +34,6 @@ export function register(program: Command, dependencies: CliDependencies): void 
     .option("--json", "generate an analysis JSON artifact")
     .option("--markdown", "generate a Markdown report")
     .option("--open", "open the generated HTML report in your default browser")
-    .option("--ai", "include an optional AI review")
     .option(
       "--benchmark [path]",
       "use Arcovia global bands or a custom benchmark profile JSON file",
@@ -59,14 +57,13 @@ export function register(program: Command, dependencies: CliDependencies): void 
             ? ARCOVIA_GLOBAL_BENCHMARK
             : await loadBenchmark(resolve(dependencies.currentDirectory(), options.benchmark));
 
-      progress.start("Validating project path");
+      progress.start("Validating project");
       await validateProjectPath(resolvedProjectPath, dependencies);
-      progress.succeed("Validated project path");
+      progress.succeed("Project validated");
 
       try {
-        progress.start("Analyzing project");
+        progress.start("Scanning project");
         const report = await dependencies.commandRunner.analyze({
-          ai: options.ai ?? false,
           ...(benchmark === undefined ? {} : { benchmark }),
           generateHtml,
           generateJson: options.json ?? generateDefaultReports,
@@ -75,13 +72,25 @@ export function register(program: Command, dependencies: CliDependencies): void 
           projectPath: resolvedProjectPath,
           verbose: cliConfiguration.verbose,
         });
+        progress.succeed(
+          `Scanned ${report.project.metadata.sourceFiles} files (${report.model.modules.length} modules)`,
+        );
         progress.succeed(`Analysis completed in ${formatDuration(report.metadata.duration)}`);
         const reportUrl = generateHtml
           ? pathToFileURL(join(outputPath, "report.html")).href
           : undefined;
         const output = new ConsoleReporter().render(report, {
           cliVersion: dependencies.version,
-          ...(reportUrl === undefined ? {} : { reportUrl, showOpenCommand: true }),
+          ...(generateHtml
+            ? {
+                htmlReportPath: reportPathForDisplay(
+                  resolvedProjectPath,
+                  outputPath,
+                  "report.html",
+                ),
+              }
+            : {}),
+          openReport: options.open ?? false,
         });
         dependencies.standardOutput.write(output.stdout);
         if (output.stderr) dependencies.standardError.write(output.stderr);
@@ -104,6 +113,13 @@ export function register(program: Command, dependencies: CliDependencies): void 
 
 function formatDuration(duration: number): string {
   return duration >= 1000 ? `${(duration / 1000).toFixed(1)} s` : `${Math.round(duration)} ms`;
+}
+
+function reportPathForDisplay(projectPath: string, outputPath: string, filename: string): string {
+  const path = relative(projectPath, join(outputPath, filename));
+  return path.length === 0 || path.startsWith("..") || isAbsolute(path)
+    ? join(outputPath, filename)
+    : path;
 }
 
 const ARCOVIA_GLOBAL_BENCHMARK: AnalysisBenchmarkProfile = {

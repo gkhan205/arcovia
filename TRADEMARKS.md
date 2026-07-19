@@ -19,7 +19,7 @@ misled about its origin or support status.
 
 ## Asset provenance
 
-`images/logo.png` and `images/icon.png` were generated with ChatGPT's
+`assets/logo.png` and `assets/icon.png` were generated with ChatGPT's
 image-generation capability, then selected for use as Arcovia project assets.
 This disclosure is provided for transparency; it is not an OpenAI endorsement
 of Arcovia.
