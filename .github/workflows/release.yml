@@ -20,9 +20,9 @@ jobs:
         with:
           version: 10
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           registry-url: https://registry.npmjs.org
           cache: pnpm
 
@@ -32,6 +32,10 @@ jobs:
       - name: Verify
         run: pnpm verify
 
+      - name: Show versions
+        run: |
+          node -v
+          npm -v
       - name: Publish to npm
         run: npm publish --access public
 
