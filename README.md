@@ -1,6 +1,6 @@
 <!-- ![npm](https://img.shields.io/npm/v/arcovia) ![downloads](https://img.shields.io/npm/dm/arcovia) ![license](https://img.shields.io/github/license/gkhan205/arcovia) ![Node](https://img.shields.io/badge/node-22+-green) -->
 
-![arcovia banner](/assets/banner.png)
+![arcovia banner](/images/banner.png)
 
 # Arcovia
 
@@ -22,7 +22,7 @@ Run Arcovia from the project you want to inspect:
 npx arcovia analyze .
 ```
 
-![CLI Output](/assets/cli-output.png)
+![CLI Output](/images/cli-output.png)
 
 ## Why Arcovia?
 

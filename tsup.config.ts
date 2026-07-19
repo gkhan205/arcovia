@@ -20,6 +20,6 @@ export default defineConfig({
   },
   format: ["esm"],
   platform: "node",
-  sourcemap: true,
+  sourcemap: false,
   target: "node22",
 });

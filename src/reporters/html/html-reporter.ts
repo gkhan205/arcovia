@@ -1,8 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
-import { build } from "vite";
-
 import type { AnalysisReport } from "../../domain/index.js";
 import {
   type AnalysisBenchmarkProfile,
@@ -28,11 +26,11 @@ function escapeJsonForScript(value: unknown): string {
     .replaceAll("&", "\\u0026");
 }
 
-function resolveAppEntry(): string {
+function resolveReportAsset(name: "app.css" | "app.js"): string {
   const currentFile = fileURLToPath(import.meta.url);
   return currentFile.includes("/dist/")
-    ? fileURLToPath(new URL("../src/reporters/html/app/main.tsx", import.meta.url))
-    : fileURLToPath(new URL("./app/main.tsx", import.meta.url));
+    ? fileURLToPath(new URL(`./report/${name}`, import.meta.url))
+    : fileURLToPath(new URL(`../../../dist/report/${name}`, import.meta.url));
 }
 
 function resolveBrandAsset(name: "icon.png" | "logo.png"): string {
@@ -47,7 +45,7 @@ async function toPngDataUrl(name: "icon.png" | "logo.png"): Promise<string> {
   return `data:image/png;base64,${image.toString("base64")}`;
 }
 
-/** Bundles the React application and embeds it with sanitized analysis data in one offline HTML file. */
+/** Embeds the prebuilt React application with sanitized analysis data in one offline HTML file. */
 export class HtmlReporter {
   public async render(report: AnalysisReport, options: HtmlReporterOptions = {}): Promise<string> {
     const artifact = createAnalysisJson(report, {
@@ -59,40 +57,10 @@ export class HtmlReporter {
       os: options.os ?? "unknown",
       platform: options.platform ?? "unknown",
     });
-    const output = await build({
-      appType: "custom",
-      build: {
-        cssCodeSplit: false,
-        lib: { entry: resolveAppEntry(), formats: ["iife"], name: "ArcoviaHtmlReport" },
-        minify: "esbuild",
-        rollupOptions: { output: { inlineDynamicImports: true } },
-        write: false,
-      },
-      configFile: false,
-      define: { "process.env.NODE_ENV": JSON.stringify("production") },
-      esbuild: { jsx: "automatic", jsxDev: false },
-      logLevel: "silent",
-      mode: "production",
-    });
-    const outputs = Array.isArray(output) ? output : [output];
-    const bundle = [];
-    for (const item of outputs) {
-      if (!("output" in item)) {
-        throw new Error("Arcovia HTML report build unexpectedly started a watcher.");
-      }
-      bundle.push(...item.output);
-    }
-    const script = bundle.find((item) => item.type === "chunk" && item.isEntry);
-    const stylesheet = bundle.find(
-      (item) => item.type === "asset" && item.fileName.endsWith(".css"),
-    );
-    if (script?.type !== "chunk" || stylesheet?.type !== "asset") {
-      throw new Error(
-        "Arcovia HTML report build did not produce a JavaScript bundle and stylesheet.",
-      );
-    }
-    const css =
-      typeof stylesheet.source === "string" ? stylesheet.source : stylesheet.source.toString();
+    const [css, script] = await Promise.all([
+      readFile(resolveReportAsset("app.css"), "utf8"),
+      readFile(resolveReportAsset("app.js"), "utf8"),
+    ]);
     const [icon, logo] = await Promise.all([toPngDataUrl("icon.png"), toPngDataUrl("logo.png")]);
     return `<!doctype html>
 <html lang="en">
@@ -108,7 +76,7 @@ export class HtmlReporter {
   <div id="root"></div>
   <script>window.__ARCOVIA_ANALYSIS__=${escapeJsonForScript(artifact)};</script>
   <script>window.__ARCOVIA_BRAND__=${escapeJsonForScript({ logo })};</script>
-  <script>${script.code}</script>
+  <script>${script}</script>
 </body>
 </html>`;
   }
