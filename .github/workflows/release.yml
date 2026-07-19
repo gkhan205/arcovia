@@ -20,26 +20,22 @@ jobs:
         with:
           version: 10
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v4
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
           cache: pnpm
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm verify
 
-      - name: Verify
-        run: pnpm verify
-
-      - name: Show versions
+      - name: Diagnostics
         run: |
           node -v
           npm -v
-      - name: Publish to npm
-        run: npm publish --access public
+          echo "OIDC URL: ${ACTIONS_ID_TOKEN_REQUEST_URL:+present}"
+          echo "OIDC TOKEN: ${ACTIONS_ID_TOKEN_REQUEST_TOKEN:+present}"
+          npm config get registry
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          generate_release_notes: true
+      - name: Publish
+        run: npm publish --provenance --access public --loglevel verbose
