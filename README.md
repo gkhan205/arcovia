@@ -1,20 +1,35 @@
-<!-- ![npm](https://img.shields.io/npm/v/arcovia) ![downloads](https://img.shields.io/npm/dm/arcovia) ![license](https://img.shields.io/github/license/gkhan205/arcovia) ![Node](https://img.shields.io/badge/node-22+-green) -->
+[![npm version](https://img.shields.io/npm/v/arcovia)](https://www.npmjs.com/package/arcovia) [![npm downloads](https://img.shields.io/npm/dm/arcovia)](https://www.npmjs.com/package/arcovia) [![License](https://img.shields.io/github/license/gkhan205/arcovia)](https://github.com/gkhan205/arcovia/blob/main/LICENSE) [![Tests](https://img.shields.io/github/actions/workflow/status/gkhan205/arcovia/ci.yml?label=Tests)](https://github.com/gkhan205/arcovia/actions/workflows/ci.yml) [![CI](https://img.shields.io/github/actions/workflow/status/gkhan205/arcovia/release.yml?label=CI)](https://github.com/gkhan205/arcovia/actions) [![OpenAI Build Week](https://img.shields.io/badge/OpenAI-Build%20Week-10a37f)](https://devpost.com/software/arcovia) [![GitHub stars](https://img.shields.io/github/stars/gkhan205/arcovia?style=social)](https://github.com/gkhan205/arcovia/stargazers) [![GitHub forks](https://img.shields.io/github/forks/gkhan205/arcovia?style=social)](https://github.com/gkhan205/arcovia/network/members) 
+
 
 ![arcovia banner](/images/banner.png)
 
 # Arcovia
 
-**Understand, measure, and improve the architecture of React and Next.js applications.**
+**Architecture Intelligence for React & Next.js. Analyze your codebase, detect architectural issues, and generate an interactive HTML report.**
 
-Arcovia scans a project, builds its dependency model, evaluates deterministic architecture rules, and produces an actionable architecture report. It is designed to answer three practical questions:
+Arcovia analyzes your project, builds a dependency graph, evaluates architectural rules, and generates an interactive HTML report with actionable insights. 
 
-1. Is this frontend architecture healthy?
-2. Why did it receive this score?
-3. What should the team fix first?
+Arcovia is **designed** to answer three practical questions:
+1. 🩺 Is this architecture healthy?
+2. 📊 Why did it receive this score?
+3. 🎯 What should the team fix first?
 
-Arcovia's findings and scores come entirely from deterministic static analysis.
+> **Deterministic by design**
+>
+> Every score, finding, and recommendation is generated through static analysis—not AI—making results consistent, reproducible, and explainable.
 
-## Quick start
+## Why Arcovia?
+
+Traditional linters focus on code quality.
+Arcovia focuses on software architecture.
+
+- ✅ Architecture health scoring
+- ✅ Dependency visualization
+- ✅ Architectural hotspots
+- ✅ Actionable refactoring guidance
+- ✅ Interactive HTML reports
+
+## Get Started
 
 Run Arcovia from the project you want to inspect:
 
@@ -24,15 +39,18 @@ npx arcovia analyze .
 
 ![CLI Output](/images/cli-output.png)
 
-## Why Arcovia?
+## 👥 Who is Arcovia for?
 
-| Traditional tools | Arcovia |
-| --- | --- |
-| Lint warnings | Architecture intelligence |
-| File-level checks | Whole-project analysis |
-| Hard to prioritize | Prioritized hotspots and Quick Wins |
-| No architectural score | Explainable architecture score |
-| Static diagnostics | Actionable roadmap |
+Arcovia is designed for teams building and maintaining React and Next.js applications.
+
+| Who                        | How Arcovia Helps                                       |
+| -------------------------- | ------------------------------------------------------- |
+| 👨‍💻 Frontend Engineers   | Detect architectural issues and improve code quality    |
+| 🏗️ Tech Leads             | Prioritize refactoring with architecture insights       |
+| 👥 Engineering Managers    | Track architecture health and technical debt            |
+| 🚀 Open Source Maintainers | Understand large codebases and dependency relationships |
+
+**Whether you're working on a side project or a large production application, Arcovia helps you understand, measure, and improve your software architecture.**
 
 ## Supported frameworks
 
@@ -303,3 +321,27 @@ npx arcovia analyze .
 ```
 
 If you find a bug or have an idea, we’d love your feedback through [GitHub Issues](https://github.com/gkhan205/arcovia/issues) and [GitHub Discussions](https://github.com/gkhan205/arcovia/discussions).
+
+
+---
+
+## ❤️ Sponsor Arcovia
+
+Arcovia is an open-source project built to help React and Next.js teams understand and improve their software architecture.
+
+If your team finds Arcovia valuable, consider sponsoring its development.
+
+Your sponsorship helps accelerate:
+
+- New architecture rules
+- HTML report improvements
+- GitHub Action
+- VS Code extension
+- Performance improvements
+- Long-term maintenance
+- Bugfixes
+- Framework Support
+
+Your support ensures Arcovia remains actively developed and free for the community.
+
+👉 **[Become a Sponsor](https://github.com/sponsors/gkhan205)**
