@@ -99,6 +99,33 @@ export class ConsoleReporter {
           ]),
     ];
     const reportSection = reports.length === 0 ? [] : ["", ...reports];
+    const policyEvaluations = report.policyEvaluations ?? [];
+    const policyConfiguration = report.policyConfiguration;
+    const failedPolicies = policyEvaluations.filter((policy) => policy.status === "failed");
+    const policySection =
+      policyEvaluations.length === 0 && policyConfiguration === undefined
+        ? []
+        : [
+            "",
+            "Architecture Policies",
+            ...(policyConfiguration === undefined
+              ? []
+              : [
+                  policyConfiguration.source === "none"
+                    ? "Configuration No policy preset configured in this project"
+                    : `Configuration Project configuration active${policyConfiguration.presets.length === 0 ? "" : ` · extends ${policyConfiguration.presets.join(", ")}`}`,
+                ]),
+            ...policyEvaluations.map((policy) => {
+              const symbol =
+                policy.status === "passed" ? theme.symbols.success : theme.symbols.failure;
+              return policy.status === "passed"
+                ? `${symbol} ${policy.id}`
+                : `${symbol} ${policy.id} — ${policy.violationCount} violation${policy.violationCount === 1 ? "" : "s"}`;
+            }),
+            ...(failedPolicies.length === 0
+              ? []
+              : [`Failed        ${failedPolicies.length} of ${policyEvaluations.length}`]),
+          ];
 
     return [
       divider,
@@ -127,6 +154,7 @@ export class ConsoleReporter {
       "",
       "Top Priorities",
       ...topPriorities,
+      ...policySection,
       ...reportSection,
     ].join("\n");
   }

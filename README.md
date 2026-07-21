@@ -136,6 +136,14 @@ arcovia analyze . --open
 arcovia doctor
 ```
 
+## Architecture policies
+
+Use `.arcovia.json` to enforce project-specific module boundaries, such as
+preventing UI modules from importing server code. Policies are evaluated as
+normal findings and appear in the terminal, JSON, and HTML reports. See the
+[architecture policy guide](engineering-docs/architecture-policies.md) for the
+schema, presets, `extends`, overrides, and examples.
+
 ## Report history and timeline
 
 Arcovia keeps the latest report at predictable paths and archives the prior version on every new

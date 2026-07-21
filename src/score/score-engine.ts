@@ -31,6 +31,8 @@ export interface ScoreConfiguration {
   readonly ruleWeights?: Readonly<Record<string, number>>;
   readonly severityMultipliers?: Readonly<Partial<Record<Severity, number>>>;
   readonly severityPenalties?: Readonly<Partial<Record<Severity, number>>>;
+  /** Severity penalties applied only to user-configured architecture policy findings. */
+  readonly policySeverityPenalties?: Readonly<Partial<Record<Severity, number>>>;
 }
 
 const CATEGORIES: readonly ScoreCategory[] = [
@@ -349,6 +351,12 @@ function createCategoryScores(
 }
 
 function findingPenalty(finding: Finding, configuration: ScoreConfiguration): number {
+  if (
+    finding.ruleId === "architecture-policy" &&
+    configuration.policySeverityPenalties !== undefined
+  ) {
+    return configuration.policySeverityPenalties[finding.severity] ?? 0;
+  }
   const penalties = { ...DEFAULT_PENALTIES, ...configuration.severityPenalties };
   const multipliers = { ...DEFAULT_MULTIPLIERS, ...configuration.severityMultipliers };
   return penalties[finding.severity] * multipliers[finding.severity];

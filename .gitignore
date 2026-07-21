@@ -5,7 +5,10 @@ coverage/
 .env
 .env.*
 # !.env.example
-docs
+engineering-docs
+!engineering-docs/
+engineering-docs/*
+!engineering-docs/architecture-policies.md
 examples
 reports
 .pnpm-store

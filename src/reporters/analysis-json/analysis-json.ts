@@ -1,6 +1,5 @@
 import { writeFile } from "node:fs/promises";
 import { isAbsolute, relative } from "node:path";
-
 import type {
   AnalysisReport,
   ArchitectureScore,
@@ -11,6 +10,8 @@ import type {
   GraphMetadataValue,
   GraphNode,
   GraphStatistics,
+  PolicyConfigurationState,
+  PolicyEvaluation,
 } from "../../domain/index.js";
 import { Severity } from "../../domain/index.js";
 
@@ -162,6 +163,23 @@ export interface AnalysisJsonRemediationAction {
   readonly recommendation: string;
 }
 
+/** Policy status preserved for dedicated CLI and HTML policy views. */
+export interface AnalysisJsonPolicyEvaluation {
+  readonly description: string;
+  readonly files: readonly string[];
+  readonly id: string;
+  readonly origin: PolicyEvaluation["origin"];
+  readonly severity: PolicyEvaluation["severity"];
+  readonly status: PolicyEvaluation["status"];
+  readonly violationCount: number;
+}
+
+/** Active policy configuration source retained for transparent report rendering. */
+export interface AnalysisJsonPolicyConfiguration {
+  readonly presets: readonly string[];
+  readonly source: PolicyConfigurationState["source"];
+}
+
 /** Public, versioned analysis artifact. The property order is part of its diff-friendly contract. */
 export interface AnalysisJsonFile {
   readonly metadata: AnalysisJsonMetadata;
@@ -176,6 +194,8 @@ export interface AnalysisJsonFile {
     readonly benchmark: AnalysisJsonBenchmark;
     readonly hotspots: readonly AnalysisJsonHotspot[];
     readonly history: readonly AnalysisJsonHistoryPoint[];
+    readonly policies: readonly AnalysisJsonPolicyEvaluation[];
+    readonly policyConfiguration?: AnalysisJsonPolicyConfiguration;
     readonly risks: readonly string[];
     readonly quickWins: readonly AnalysisJsonRemediationAction[];
     readonly roadmap: readonly AnalysisJsonRemediationAction[];
@@ -490,6 +510,31 @@ function createActionPlan(
   };
 }
 
+function toPolicyEvaluations(report: AnalysisReport): readonly AnalysisJsonPolicyEvaluation[] {
+  return [...(report.policyEvaluations ?? [])]
+    .map((policy) => ({
+      description: policy.description,
+      files: [...policy.files]
+        .map((file) => relativePath(file, report.project.root))
+        .sort(compareText),
+      id: policy.id,
+      origin: policy.origin,
+      severity: policy.severity,
+      status: policy.status,
+      violationCount: policy.violationCount,
+    }))
+    .sort((left, right) => compareText(left.id, right.id));
+}
+
+function toPolicyConfiguration(
+  report: AnalysisReport,
+): AnalysisJsonPolicyConfiguration | undefined {
+  const configuration = report.policyConfiguration;
+  return configuration === undefined
+    ? undefined
+    : { presets: [...configuration.presets].sort(compareText), source: configuration.source };
+}
+
 function severityRank(severity: AnalysisJsonFinding["severity"]): number {
   return SEVERITY_ORDER[severity];
 }
@@ -522,6 +567,8 @@ export function createAnalysisJson(
     .sort(compareText);
   const hotspots = createHotspots(findings, report.score);
   const actionPlan = createActionPlan(hotspots, findings);
+  const policies = toPolicyEvaluations(report);
+  const policyConfiguration = toPolicyConfiguration(report);
 
   return {
     metadata: {
@@ -580,6 +627,8 @@ export function createAnalysisJson(
       ]
         .sort((left, right) => left.generatedAt.localeCompare(right.generatedAt))
         .slice(-8),
+      policies,
+      ...(policyConfiguration === undefined ? {} : { policyConfiguration }),
       risks,
       quickWins: actionPlan.quickWins,
       roadmap: actionPlan.roadmap,

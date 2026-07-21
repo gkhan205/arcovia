@@ -19,6 +19,7 @@ export type { Metadata } from "./metadata.js";
 export type { MetricCollection } from "./metric.js";
 export type { Context, Hook, ParseError, ProjectModel, Route, Symbol } from "./model.js";
 export type { Module } from "./module.js";
+export type { PolicyConfigurationState, PolicyEvaluation } from "./policy.js";
 export type { Project, ProjectMetadata } from "./project.js";
 export type { ProjectFile } from "./project-file.js";
 export type { RuleCategory, RuleMetadata } from "./rule.js";

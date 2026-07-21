@@ -3,6 +3,7 @@ export * from "./domain/index.js";
 export * from "./errors/index.js";
 export * from "./graph/index.js";
 export * from "./parser/index.js";
+export * from "./policies/index.js";
 export * from "./reporters/index.js";
 export * from "./rules/index.js";
 export * from "./scanner/index.js";

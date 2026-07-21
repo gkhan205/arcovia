@@ -4,10 +4,13 @@ import type {
   ArchitectureGraph,
   ArchitectureScore,
   Finding,
+  PolicyEvaluation,
   Project,
   ProjectModel,
 } from "../domain/index.js";
+import type { PolicyConfiguration } from "../policies/index.js";
 import type { RuleConfiguration } from "../rules/index.js";
+import type { ScoreConfiguration } from "../score/index.js";
 import { Logger } from "../shared/index.js";
 
 import type { AnalysisBuilder, AnalysisBuilderInput } from "./analysis-builder.js";
@@ -31,15 +34,28 @@ export interface CoreEngineDependencies {
   };
   readonly scanner: { scan(options: { readonly projectPath: string }): Promise<Project> };
   readonly scoreEngine: {
-    calculate(input: {
-      readonly findings: readonly Finding[];
-      readonly graph: ArchitectureGraph;
-      readonly metrics: AnalysisReport["metrics"];
-      readonly model: ProjectModel;
-      readonly project: Project;
-    }): ArchitectureScore;
+    calculate(
+      input: {
+        readonly findings: readonly Finding[];
+        readonly graph: ArchitectureGraph;
+        readonly metrics: AnalysisReport["metrics"];
+        readonly model: ProjectModel;
+        readonly project: Project;
+      },
+      configuration?: ScoreConfiguration,
+    ): ArchitectureScore;
   };
   readonly parser: { parse(input: { readonly project: Project }): ProjectModel };
+  readonly policyEngine?: {
+    evaluate(input: {
+      readonly configuration: PolicyConfiguration;
+      readonly model: ProjectModel;
+      readonly project: Project;
+    }): {
+      readonly evaluations: readonly PolicyEvaluation[];
+      readonly findings: readonly Finding[];
+    };
+  };
 }
 
 const EMPTY_CONFIGURATION = createConfiguration({});
@@ -80,7 +96,7 @@ export class CoreEngine {
       timings,
       () => this.dependencies.graphBuilder.build(model),
     );
-    const findings = await this.stage(
+    const builtInFindings = await this.stage(
       "rules",
       "Executing architecture rules",
       options,
@@ -95,6 +111,15 @@ export class CoreEngine {
           project,
         }),
     );
+    const policyResult =
+      this.dependencies.policyEngine === undefined || options.policyConfiguration === undefined
+        ? { evaluations: [] as readonly PolicyEvaluation[], findings: [] as readonly Finding[] }
+        : this.dependencies.policyEngine.evaluate({
+            configuration: options.policyConfiguration,
+            model,
+            project,
+          });
+    const findings = Object.freeze([...builtInFindings, ...policyResult.findings]);
     const metrics = createMetrics(project, model, graph);
     const score = await this.stage(
       "score",
@@ -102,7 +127,13 @@ export class CoreEngine {
       options,
       logger,
       timings,
-      () => this.dependencies.scoreEngine.calculate({ findings, graph, metrics, model, project }),
+      () =>
+        this.dependencies.scoreEngine.calculate(
+          { findings, graph, metrics, model, project },
+          options.policyConfiguration === undefined
+            ? undefined
+            : { policySeverityPenalties: options.policyConfiguration.scorePenalties },
+        ),
     );
     timings.total = performance.now() - startedAt;
     const report = await this.stage(
@@ -117,6 +148,15 @@ export class CoreEngine {
           graph,
           model,
           project,
+          ...(options.policyConfiguration === undefined
+            ? {}
+            : {
+                policyConfiguration: {
+                  presets: options.policyConfiguration.presets,
+                  source: options.policyConfiguration.source,
+                },
+              }),
+          policyEvaluations: policyResult.evaluations,
           score,
           timings,
         } satisfies AnalysisBuilderInput),
