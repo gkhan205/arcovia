@@ -4,7 +4,7 @@ import starlight from '@astrojs/starlight';
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://gkhan205.github.io',
+	site: 'https://arcovia.ghazikhan.in',
 	// GitHub Pages hosts this project at /arcovia. Leaving the base unset for
 	// local development keeps http://localhost:4321/ as the docs homepage.
 	base: process.env.SITE_BASE || undefined,
