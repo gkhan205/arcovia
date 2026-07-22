@@ -68,6 +68,7 @@ Arcovia is designed for teams building and maintaining React and Next.js applica
 - ✅ Architecture Timeline
 - ✅ Offline HTML Report
 - ✅ JSON Report
+- ✅ Custom Policy Rules
 - ✅ Deterministic Rules
 - ✅ No Cloud Required
 
@@ -138,10 +139,11 @@ arcovia doctor
 
 ## Architecture policies
 
-Use `.arcovia.json` to enforce project-specific module boundaries, such as
-preventing UI modules from importing server code. Policies are evaluated as
-normal findings and appear in the terminal, JSON, and HTML reports. See the
-[architecture policy guide](engineering-docs/architecture-policies.md) for the
+Arcovia `v0.2.0` adds custom policy rules through `.arcovia.json`. Use policies
+to enforce project-specific module boundaries, such as preventing UI modules
+from importing server code. Policies are evaluated as normal findings and appear
+in the terminal, JSON, and HTML reports. See the
+[custom policy rules guide](https://arcovia.ghazikhan.in/guides/custom-policy-rules/) for the
 schema, presets, `extends`, overrides, and examples.
 
 ## Report history and timeline

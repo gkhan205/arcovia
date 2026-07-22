@@ -41,6 +41,16 @@ arcovia doctor
 
 Use `doctor` when Arcovia cannot find a supported project or you want to validate the local CLI setup.
 
+## Use custom policy rules
+
+Arcovia `v0.2.0` automatically reads `.arcovia.json` from the analyzed project root.
+
+```bash
+arcovia analyze .
+```
+
+Use this file to define custom architecture boundaries, extend `arcovia:recommended`, or tune policy scoring. See [custom policy rules](../custom-policy-rules/) for the supported schema.
+
 ## Benchmark context
 
 ```bash

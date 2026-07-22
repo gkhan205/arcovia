@@ -5,6 +5,8 @@ description: Define and enforce project-specific module boundaries with .arcovia
 
 Custom policy rules let your team encode architectural boundaries in version control. Arcovia evaluates them against resolved local imports and reports violations alongside its built-in findings.
 
+Available in Arcovia `v0.2.0` and later.
+
 ## Quick start
 
 Create `.arcovia.json` in the project root:

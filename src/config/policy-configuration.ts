@@ -202,7 +202,7 @@ function assertKnownKeys(value: Record<string, unknown>, allowed: readonly strin
 }
 function invalid(message: string): ConfigurationError {
   return new ConfigurationError(`Invalid ${POLICY_FILE}: ${message}`, [
-    "See engineering-docs/architecture-policies.md for the supported schema.",
+    "See https://arcovia.ghazikhan.in/guides/custom-policy-rules/ for the supported schema.",
   ]);
 }
 function isMissingFile(error: unknown): boolean {

@@ -58,7 +58,7 @@ export default defineConfig({
 							'Architecture intelligence CLI for React and Next.js teams. Deterministic dependency graph analysis, findings, and a portable HTML report.',
 						offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
 						url: 'https://gkhan205.github.io/arcovia/',
-						softwareVersion: '0.1.2',
+						softwareVersion: '0.2.0',
 					}),
 				},
 			],
