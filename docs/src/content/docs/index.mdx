@@ -1,0 +1,52 @@
+---
+title: Architecture Intelligence for React Teams
+description: Analyze React and Next.js projects with deterministic architecture analysis.
+template: splash
+hero:
+  title: ' '
+---
+
+import TechnologyRow from '../../components/TechnologyRow.astro';
+
+<section class="simple-hero">
+	<div>
+		<p class="eyebrow">Architecture observatory</p>
+		<h1>Architecture Intelligence<br />for React Teams</h1>
+		<p>Analyze React & Next.js projects with deterministic architecture analysis.</p>
+		<div class="actions"><a class="primary" href="./guides/quick-start/"><code>npx arcovia analyze .</code></a><a href="https://github.com/gkhan205/arcovia">View on GitHub ↗</a></div>
+	</div>
+	<div class="terminal"><div><i></i><i></i><i></i></div><code><b>$ npx arcovia analyze .</b><span>Architecture health <strong>88.92 / 100</strong></span><span>Findings <strong>205</strong></span><span>Warnings <strong>37</strong></span><span>Critical <strong>0</strong></span><hr /><em>✓ Analysis complete. report.html generated.</em></code></div>
+</section>
+
+<p class="trusted">Trusted technologies</p><TechnologyRow />
+
+## Features
+
+<div class="features">
+	<div><span>◎</span><h3>Architecture Score</h3><p>Clear health score with an explainable breakdown.</p></div><div><span>⌘</span><h3>Dependency Graph</h3><p>Explore how modules and packages connect.</p></div><div><span>△</span><h3>Smart Findings</h3><p>Actionable issues with evidence and locations.</p></div><div><span>◉</span><h3>Hotspots</h3><p>Focus on the files that need attention first.</p></div><div><span>▥</span><h3>Actionable Roadmap</h3><p>Prioritized recommendations for improvement.</p></div><div><span>▤</span><h3>HTML Report</h3><p>A portable report to share with your team.</p></div>
+</div>
+
+## How Arcovia Works
+
+<div class="workflow-simple">
+	<div>📁<strong>Scanner</strong></div><i>↓</i><div>🧩<strong>AST Parser</strong></div><i>↓</i><div>🕸<strong>Dependency Graph</strong></div><i>↓</i><div>📏<strong>Rule Engine</strong></div><i>↓</i><div>🏆<strong>Score Engine</strong></div><i>↓</i><div>📄<strong>HTML Report</strong></div>
+</div>
+
+## Report Preview
+
+<section class="report-preview-simple"><div><h3>Architecture reports your team can act on</h3><p>Understand the score, investigate findings, identify hotspots, and follow a focused improvement roadmap.</p><a href="./guides/reports/">Learn about reports →</a></div><div class="report-mockup"><header>arcovia <span>acme/web-app</span></header><main><strong>88.92</strong><p>Architecture health</p><div><b>205<br /><small>Findings</small></b><b>37<br /><small>Warnings</small></b><b>0<br /><small>Critical</small></b></div><hr /><p>Dependency graph · Category score · Hotspots</p></main></div></section>
+
+## CLI Example
+
+```bash
+$ npx arcovia analyze .
+
+✓ Architecture Score
+✓ Hotspots
+✓ Dependency Graph
+✓ report.html generated
+```
+
+## Roadmap
+
+<ol class="roadmap-simple"><li><strong>v0.1</strong> ✅ Core engine and HTML report</li><li><strong>v0.2</strong> Custom Rules</li><li><strong>v0.3</strong> GitHub Action</li><li><strong>v0.4</strong> Report History</li><li><strong>v0.5</strong> VS Code Extension</li><li><strong>Future</strong> Cloud and AI Assistant</li></ol>

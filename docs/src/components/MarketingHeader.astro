@@ -1,0 +1,25 @@
+---
+import logo from '../assets/arcovia-logo.png';
+
+const base = import.meta.env.BASE_URL.endsWith('/')
+	? import.meta.env.BASE_URL
+	: `${import.meta.env.BASE_URL}/`;
+---
+
+<header class="marketing-header">
+	<a class="marketing-brand" href={base} aria-label="Arcovia home">
+		<img src={logo.src} width={logo.width} height={logo.height} alt="Arcovia" />
+	</a>
+
+	<nav aria-label="Main navigation">
+		<a href={`${base}guides/introduction/`}>Docs</a>
+		<a href={`${base}guides/quick-start/`}>Quick start</a>
+		<a href={`${base}reference/findings/`}>Rules</a>
+		<a href={`${base}guides/reports/`}>Reports</a>
+	</nav>
+
+	<div class="marketing-actions">
+		<a href="https://github.com/gkhan205/arcovia" aria-label="Arcovia on GitHub">GitHub ↗</a>
+		<a class="header-cta" href={`${base}guides/quick-start/`}>Get started <span>→</span></a>
+	</div>
+</header>
