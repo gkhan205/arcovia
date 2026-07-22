@@ -11,7 +11,8 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'Arcovia',
-			description: 'Architecture intelligence for React and Next.js teams.',
+			description:
+				'Analyze React and Next.js projects, detect architectural issues, and turn complexity into actionable insights with deterministic, local-first analysis.',
 			logo: {
 				src: './src/assets/arcovia-logo.png',
 				alt: 'Arcovia',
@@ -19,6 +20,48 @@ export default defineConfig({
 			},
 			favicon: '/images/icon.png',
 			customCss: ['./src/styles/custom.css'],
+			head: [
+				{
+					tag: 'meta',
+					attrs: { property: 'og:image', content: 'https://gkhan205.github.io/arcovia/images/banner.png' },
+				},
+				{
+					tag: 'meta',
+					attrs: { property: 'og:type', content: 'website' },
+				},
+				{
+					tag: 'meta',
+					attrs: { name: 'twitter:card', content: 'summary_large_image' },
+				},
+				{
+					tag: 'meta',
+					attrs: { name: 'twitter:image', content: 'https://gkhan205.github.io/arcovia/images/banner.png' },
+				},
+				{
+					tag: 'meta',
+					attrs: {
+						name: 'keywords',
+						content:
+							'react architecture analysis, next.js architecture, dependency graph, static analysis, code quality, architecture score, technical debt, react cli tool',
+					},
+				},
+				{
+					tag: 'script',
+					attrs: { type: 'application/ld+json' },
+					content: JSON.stringify({
+						'@context': 'https://schema.org',
+						'@type': 'SoftwareApplication',
+						name: 'Arcovia',
+						applicationCategory: 'DeveloperApplication',
+						operatingSystem: 'macOS, Linux, Windows',
+						description:
+							'Architecture intelligence CLI for React and Next.js teams. Deterministic dependency graph analysis, findings, and a portable HTML report.',
+						offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+						url: 'https://gkhan205.github.io/arcovia/',
+						softwareVersion: '0.1.2',
+					}),
+				},
+			],
 			components: {
 				Header: './src/components/MarketingHeader.astro',
 				Footer: './src/components/SiteFooter.astro',
@@ -37,7 +80,7 @@ export default defineConfig({
 					items: [
 						{ label: 'Commands', slug: 'guides/commands' },
 						{ label: 'Understand your report', slug: 'guides/reports' },
-						{ label: 'Architecture policies', slug: 'guides/architecture-policies' },
+						{ label: 'Custom policy rules', slug: 'guides/custom-policy-rules' },
 					],
 				},
 				{

@@ -1,52 +1,129 @@
 ---
 title: Architecture Intelligence for React Teams
-description: Analyze React and Next.js projects with deterministic architecture analysis.
+description: Analyze your React and Next.js projects, detect architectural issues, and turn complexity into actionable insights.
 template: splash
 hero:
   title: ' '
 ---
 
 import TechnologyRow from '../../components/TechnologyRow.astro';
+import GitHubStats from '../../components/GitHubStats.astro';
+import CopyCommand from '../../components/CopyCommand.astro';
+import Icon from '../../components/Icon.astro';
 
 <section class="simple-hero">
 	<div>
-		<p class="eyebrow">Architecture observatory</p>
-		<h1>Architecture Intelligence<br />for React Teams</h1>
-		<p>Analyze React & Next.js projects with deterministic architecture analysis.</p>
-		<div class="actions"><a class="primary" href="./guides/quick-start/"><code>npx arcovia analyze .</code></a><a href="https://github.com/gkhan205/arcovia">View on GitHub ↗</a></div>
+
+		<h1>Architecture Intelligence<br /><span>for React Teams</span></h1>
+		<p>Analyze your React and Next.js projects, detect architectural issues, and turn complexity into actionable insights.</p>
+		<div class="actions"><CopyCommand class="primary" /><a class="secondary" href="https://github.com/gkhan205/arcovia">View on GitHub ↗</a></div>
 	</div>
-	<div class="terminal"><div><i></i><i></i><i></i></div><code><b>$ npx arcovia analyze .</b><span>Architecture health <strong>88.92 / 100</strong></span><span>Findings <strong>205</strong></span><span>Warnings <strong>37</strong></span><span>Critical <strong>0</strong></span><hr /><em>✓ Analysis complete. report.html generated.</em></code></div>
+	<div class="terminal">
+		<div><i></i><i></i><i></i></div>
+		<code>
+			<b>$ npx arcovia analyze .</b>
+			<span class="blank"></span>
+			<span class="lead">Arcovia v0.1.2</span>
+			<span class="sub">Architecture Intelligence</span>
+			<span class="blank"></span>
+			<span>Overall score <strong>88.92</strong></span>
+			<span>Findings <strong>205</strong></span>
+			<span>Warnings <strong>37</strong></span>
+			<span>Critical <strong>0</strong></span>
+			<hr />
+			<span>Analyzed files <strong>612</strong></span>
+			<span>Dependencies tracked <strong>1,842</strong></span>
+			<hr />
+			<em>◍ Analysis complete. Report generated.</em>
+		</code>
+	</div>
 </section>
 
-<p class="trusted">Trusted technologies</p><TechnologyRow />
+<GitHubStats />
 
-## Features
+<p class="trusted">Built for React teams using</p>
+<TechnologyRow />
+
+<h2 class="landing-section-title">Everything you need to improve architecture</h2>
+
+<p class="section-subtitle">From deep analysis to clear action items.</p>
 
 <div class="features">
-	<div><span>◎</span><h3>Architecture Score</h3><p>Clear health score with an explainable breakdown.</p></div><div><span>⌘</span><h3>Dependency Graph</h3><p>Explore how modules and packages connect.</p></div><div><span>△</span><h3>Smart Findings</h3><p>Actionable issues with evidence and locations.</p></div><div><span>◉</span><h3>Hotspots</h3><p>Focus on the files that need attention first.</p></div><div><span>▥</span><h3>Actionable Roadmap</h3><p>Prioritized recommendations for improvement.</p></div><div><span>▤</span><h3>HTML Report</h3><p>A portable report to share with your team.</p></div>
+	<div><span class="feature-icon"><Icon name="gauge" /></span><h3>Architecture Score</h3><p>Get a clear score (0–100) with grade, breakdown, and what's driving it.</p></div>
+	<div><span class="feature-icon"><Icon name="share" /></span><h3>Dependency Graph</h3><p>Interactive graph of your modules with incoming and outgoing dependencies.</p></div>
+	<div><span class="feature-icon"><Icon name="alert-triangle" /></span><h3>Smart Findings</h3><p>Actionable findings with evidence, rationale, and specific recommendations.</p></div>
+	<div><span class="feature-icon"><Icon name="crosshair" /></span><h3>Hotspots</h3><p>Identify the riskiest files and areas that need your attention first.</p></div>
+	<div><span class="feature-icon"><Icon name="bar-chart" /></span><h3>Category Breakdown</h3><p>Deep dive into architecture, components, imports, complexity, and more.</p></div>
+	<div><span class="feature-icon"><Icon name="flag" /></span><h3>Actionable Roadmap</h3><p>Prioritized recommendations to reduce architectural debt over time.</p></div>
 </div>
 
-## How Arcovia Works
+<h2 class="landing-section-title">How Arcovia works</h2>
+
+<p class="section-subtitle">Deterministic analysis. Zero guesswork.</p>
 
 <div class="workflow-simple">
-	<div>📁<strong>Scanner</strong></div><i>↓</i><div>🧩<strong>AST Parser</strong></div><i>↓</i><div>🕸<strong>Dependency Graph</strong></div><i>↓</i><div>📏<strong>Rule Engine</strong></div><i>↓</i><div>🏆<strong>Score Engine</strong></div><i>↓</i><div>📄<strong>HTML Report</strong></div>
+	<div><span class="step-icon"><Icon name="folder" /></span><strong>1. Scan</strong><p>Scans your codebase and collects metadata.</p></div>
+	<i>┈┈▸</i>
+	<div><span class="step-icon"><Icon name="code" /></span><strong>2. Parse</strong><p>Parses AST to extract components, imports, routes, and more.</p></div>
+	<i>┈┈▸</i>
+	<div><span class="step-icon"><Icon name="git-graph" /></span><strong>3. Build Graph</strong><p>Builds a dependency graph to understand relationships.</p></div>
+	<i>┈┈▸</i>
+	<div><span class="step-icon"><Icon name="list-checks" /></span><strong>4. Evaluate</strong><p>Runs deterministic rules to detect architectural issues.</p></div>
+	<i>┈┈▸</i>
+	<div><span class="step-icon"><Icon name="gauge" /></span><strong>5. Score</strong><p>Calculates architecture score with clear explanations.</p></div>
+	<i>┈┈▸</i>
+	<div><span class="step-icon"><Icon name="file-text" /></span><strong>6. Report</strong><p>Generates a beautiful HTML report and machine-readable JSON.</p></div>
 </div>
 
-## Report Preview
+<section class="report-preview-simple">
+	<div>
+		<p class="eyebrow">Beautiful. Interactive. Actionable.</p>
+		<h3>Reports that help you take action</h3>
+		<p>Arcovia generates a detailed HTML report with an interactive dependency graph, score breakdown, hotspots, findings and a clear roadmap.</p>
+		<ul class="checklist">
+			<li>Interactive dependency graph</li>
+			<li>Score explanation and contributors</li>
+			<li>Top hotspots and risky files</li>
+			<li>Actionable recommendations</li>
+			<li>Export JSON for automation</li>
+		</ul>
+		<a class="primary" href="./guides/reports/">View report example →</a>
+	</div>
+	<div class="report-mockup">
+		<header><span class="mockup-dots"><i></i><i></i><i></i></span><span class="mockup-brand">arcovia</span></header>
+		<div class="mockup-body">
+			<nav>
+				<span class="active">Overview</span><span>Score</span><span>Findings</span><span>Hotspots</span><span>Components</span><span>Graph</span><span>Roadmap</span><span>Settings</span>
+			</nav>
+			<main>
+				<div class="mockup-top">
+					<div class="mockup-score"><p>Overall Score</p><strong>88.92</strong><small>B+</small></div>
+					<div class="mockup-findings"><p>Findings Summary</p><span>205<small>Total Findings</small></span><span>37<small>Warnings</small></span><span>0<small>Critical</small></span></div>
+					<div class="mockup-graph"><p>Dependency Graph</p><div class="graph-dots"></div></div>
+				</div>
+				<div class="mockup-categories">
+					<p>Category Scores</p>
+					<div><span>Architecture<b>90.3</b></span><span>Hooks<b>94.1</b></span><span>Components<b>99.5</b></span><span>Context<b>90.7</b></span><span>Imports<b>97.4</b></span><span>Performance<b>84.1</b></span><span>Complexity<b>81.8</b></span><span>Routes<b>99.6</b></span></div>
+				</div>
+			</main>
+		</div>
+	</div>
+</section>
 
-<section class="report-preview-simple"><div><h3>Architecture reports your team can act on</h3><p>Understand the score, investigate findings, identify hotspots, and follow a focused improvement roadmap.</p><a href="./guides/reports/">Learn about reports →</a></div><div class="report-mockup"><header>arcovia <span>acme/web-app</span></header><main><strong>88.92</strong><p>Architecture health</p><div><b>205<br /><small>Findings</small></b><b>37<br /><small>Warnings</small></b><b>0<br /><small>Critical</small></b></div><hr /><p>Dependency graph · Category score · Hotspots</p></main></div></section>
+<section class="cta-banner">
+	<div><h2>Get started in seconds</h2><p>No configuration. No setup. Just run the command.</p></div>
+	<CopyCommand class="terminal-cta" />
+</section>
 
-## CLI Example
+<h2 class="landing-section-title">Roadmap</h2>
 
-```bash
-$ npx arcovia analyze .
+<p class="section-subtitle">What's coming next.</p>
 
-✓ Architecture Score
-✓ Hotspots
-✓ Dependency Graph
-✓ report.html generated
-```
-
-## Roadmap
-
-<ol class="roadmap-simple"><li><strong>v0.1</strong> ✅ Core engine and HTML report</li><li><strong>v0.2</strong> Custom Rules</li><li><strong>v0.3</strong> GitHub Action</li><li><strong>v0.4</strong> Report History</li><li><strong>v0.5</strong> VS Code Extension</li><li><strong>Future</strong> Cloud and AI Assistant</li></ol>
+<ol class="roadmap-simple">
+	<li class="done"><span class="dot">✓</span><strong>v0.1</strong><p>Core engine<br />HTML report</p></li>
+	<li class="done"><span class="dot">✓</span><strong>v0.2</strong><em>Current</em><p>Custom rules<br />Configuration</p></li>
+	<li><span class="dot"></span><strong>v0.3</strong><p>GitHub Action<br />CI integration</p></li>
+	<li><span class="dot"></span><strong>v0.4</strong><p>Report history<br />Compare reports</p></li>
+	<li><span class="dot"></span><strong>v0.5</strong><p>VS Code extension<br />In-editor insights</p></li>
+	<li><span class="dot"></span><strong>Future</strong><p>Arcovia Cloud<br />AI assistant</p></li>
+</ol>
