@@ -2,7 +2,14 @@
 
 All notable changes to Arcovia are documented in this file.
 
-## Unreleased
+## v0.1.3 
+
+### Fixed
+
+- Resolved Windows `npx` HTML report generation by normalizing compiled report-asset paths before
+  loading `dist/report/app.css` and `dist/report/app.js`.
+
+## v0.1.2
 
 ### Added
 
