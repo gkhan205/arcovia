@@ -13,6 +13,7 @@ import {
   Severity,
   WorkspaceType,
 } from "../src/domain/index.js";
+import { isBuiltReportModulePath } from "../src/reporters/html/html-reporter.js";
 import {
   ANALYSIS_JSON_SCHEMA_URL,
   ANALYSIS_JSON_VERSION,
@@ -31,6 +32,16 @@ const options = {
   os: "Darwin",
   platform: "darwin",
 };
+
+describe("HTML report runtime assets", () => {
+  it("recognizes a compiled report module on Windows", () => {
+    expect(
+      isBuiltReportModulePath(
+        "C:\\Users\\HP\\AppData\\Local\\npm-cache_npx\\abc\\node_modules\\arcovia\\dist\\chunk.js",
+      ),
+    ).toBe(true);
+  });
+});
 
 function createReport(): AnalysisReport {
   return {
