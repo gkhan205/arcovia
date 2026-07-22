@@ -40,7 +40,7 @@ jobs:
         run: pnpm --dir docs install --frozen-lockfile
 
       - name: Build site
-        run: pnpm --dir docs build:pages
+        run: pnpm --dir docs build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
