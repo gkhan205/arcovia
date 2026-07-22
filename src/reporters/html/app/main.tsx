@@ -14,7 +14,7 @@ declare global {
 
 const SEVERITIES = ["critical", "error", "warning", "info"] as const;
 type Severity = (typeof SEVERITIES)[number];
-type Page = "dashboard" | "findings" | "graph" | "metrics" | "recommendations";
+type Page = "dashboard" | "findings" | "graph" | "metrics" | "policies" | "recommendations";
 type AnalysisGraphNode = AnalysisJsonFile["graph"]["nodes"][number];
 
 interface GraphGroup {
@@ -56,6 +56,7 @@ function App({ analysis }: { readonly analysis: AnalysisJsonFile }) {
   const pages: readonly { readonly id: Page; readonly label: string }[] = [
     { id: "dashboard", label: "Overview" },
     { id: "findings", label: "Findings" },
+    { id: "policies", label: "Policies" },
     { id: "graph", label: "Dependency graph" },
     { id: "metrics", label: "Metrics" },
     { id: "recommendations", label: "Recommendations" },
@@ -123,12 +124,78 @@ function App({ analysis }: { readonly analysis: AnalysisJsonFile }) {
           {page === "findings" && (
             <Findings findings={findings} severity={severity} setSeverity={setSeverity} />
           )}
+          {page === "policies" && <Policies analysis={analysis} />}
           {page === "graph" && <Graph analysis={analysis} />}
           {page === "metrics" && <Metrics analysis={analysis} />}
           {page === "recommendations" && <Recommendations analysis={analysis} />}
         </section>
       </section>
     </main>
+  );
+}
+
+function Policies({ analysis }: { readonly analysis: AnalysisJsonFile }) {
+  const policies = analysis.analysis.policies;
+  const configuration = analysis.analysis.policyConfiguration;
+  const failed = policies.filter((policy) => policy.status === "failed").length;
+  const configurationTitle =
+    configuration?.source === "none"
+      ? "No policy preset configured"
+      : configuration?.source === "project"
+        ? "Project policy configuration active"
+        : "Policy configuration unavailable";
+  const configurationDetail =
+    configuration === undefined
+      ? "This report does not include policy configuration metadata."
+      : configuration.source === "none"
+        ? "No .arcovia.json policy configuration was found. No policy preset is active."
+        : configuration.presets.length === 0
+          ? ".arcovia.json is active with project-defined policies only."
+          : `.arcovia.json is active and extends ${configuration.presets.join(", ")}.`;
+  return (
+    <>
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">ARCHITECTURE POLICIES</p>
+          <h2>
+            {policies.length - failed} passed · {failed} failed
+          </h2>
+        </div>
+      </div>
+      <section className="panel">
+        <p className="eyebrow">ACTIVE CONFIGURATION</p>
+        <h2>{configurationTitle}</h2>
+        <p className="notice">{configurationDetail}</p>
+      </section>
+      <section className="findings">
+        {policies.length === 0 ? (
+          <p className="notice">No architecture policies were configured for this analysis.</p>
+        ) : (
+          policies.map((policy) => (
+            <article className="finding" key={policy.id}>
+              <div>
+                <span className={policy.status === "passed" ? "badge info" : "badge error"}>
+                  {policy.status.toUpperCase()}
+                </span>
+                <span className="rule">
+                  {policy.origin === "preset" ? "Arcovia preset" : "Project configuration"}
+                </span>
+              </div>
+              <h3>{policy.id}</h3>
+              <p>{policy.description}</p>
+              <dl>
+                <dt>Severity</dt>
+                <dd>{policy.severity}</dd>
+                <dt>Violations</dt>
+                <dd>{policy.violationCount}</dd>
+                <dt>Files</dt>
+                <dd>{policy.files.length === 0 ? "—" : policy.files.join(", ")}</dd>
+              </dl>
+            </article>
+          ))
+        )}
+      </section>
+    </>
   );
 }
 

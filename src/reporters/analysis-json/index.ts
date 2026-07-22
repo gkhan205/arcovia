@@ -9,6 +9,8 @@ export type {
   AnalysisJsonMetadata,
   AnalysisJsonMetrics,
   AnalysisJsonOptions,
+  AnalysisJsonPolicyConfiguration,
+  AnalysisJsonPolicyEvaluation,
   AnalysisJsonProject,
   AnalysisJsonRemediationAction,
   AnalysisJsonSummary,

@@ -1,0 +1,30 @@
+---
+interface Props {
+	class?: string;
+	command?: string;
+}
+
+const { class: className = '', command = 'npx arcovia analyze .' } = Astro.props;
+---
+
+<button class:list={['copy-command', className]} type="button" data-copy-command={command} aria-label={`Copy ${command}`}>
+	<code>$ {command}</code>
+	<span aria-hidden="true">⧉</span>
+	<span class="sr-only" aria-live="polite"></span>
+</button>
+
+<script>
+	document.querySelectorAll<HTMLButtonElement>('[data-copy-command]').forEach((button) => {
+		button.addEventListener('click', async () => {
+			const command = button.dataset.copyCommand;
+			if (!command) return;
+
+			await navigator.clipboard.writeText(command);
+			const icon = button.querySelector('[aria-hidden="true"]');
+			const announcement = button.querySelector('.sr-only');
+			if (icon) icon.textContent = '✓';
+			if (announcement) announcement.textContent = 'Command copied';
+			setTimeout(() => { if (icon) icon.textContent = '⧉'; }, 1600);
+		});
+	});
+</script>

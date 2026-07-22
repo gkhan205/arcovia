@@ -1,0 +1,5 @@
+---
+import { siNextdotjs, siReact, siTypescript, siVite, siRemix } from 'simple-icons';
+const technologies = [{ label: 'Next.js', icon: siNextdotjs }, { label: 'React', icon: siReact }, { label: 'TypeScript', icon: siTypescript }, { label: 'Vite', icon: siVite }, { label: 'Remix', icon: siRemix }];
+---
+<div class="technology-logos">{technologies.map(({ label, icon }) => <div><svg viewBox="0 0 24 24" aria-hidden="true"><path d={icon.path} /></svg><span>{label}</span></div>)}</div>

@@ -3,6 +3,8 @@ import type {
   ArchitectureGraph,
   ArchitectureScore,
   Finding,
+  PolicyConfigurationState,
+  PolicyEvaluation,
   Project,
   ProjectModel,
 } from "../domain/index.js";
@@ -15,6 +17,8 @@ export interface AnalysisBuilderInput {
   readonly graph: ArchitectureGraph;
   readonly model: ProjectModel;
   readonly project: Project;
+  readonly policyEvaluations?: readonly PolicyEvaluation[];
+  readonly policyConfiguration?: PolicyConfigurationState;
   readonly score: ArchitectureScore;
   readonly timings: PipelineTiming;
 }
@@ -62,6 +66,17 @@ export class AnalysisBuilder {
       }),
       model: input.model,
       project: input.project,
+      ...(input.policyEvaluations === undefined
+        ? {}
+        : { policyEvaluations: Object.freeze([...input.policyEvaluations]) }),
+      ...(input.policyConfiguration === undefined
+        ? {}
+        : {
+            policyConfiguration: Object.freeze({
+              presets: Object.freeze([...input.policyConfiguration.presets]),
+              source: input.policyConfiguration.source,
+            }),
+          }),
       score: input.score,
       version: this.options.version,
     });

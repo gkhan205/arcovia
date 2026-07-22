@@ -5,9 +5,9 @@ coverage/
 .env
 .env.*
 # !.env.example
-docs
+engineering-docs
 examples
 reports
 .pnpm-store
 .DS_Store
-engineering-docs
+.claude

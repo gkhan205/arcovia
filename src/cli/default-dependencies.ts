@@ -2,10 +2,11 @@ import { execFile } from "node:child_process";
 import { stat } from "node:fs/promises";
 import { promisify } from "node:util";
 
-import { loadConfiguration } from "../config/index.js";
+import { loadConfiguration, loadPolicyConfiguration } from "../config/index.js";
 import { AnalysisBuilder, CoreEngine, ReporterPipeline } from "../core/index.js";
 import { ArchitectureGraphBuilder } from "../graph/index.js";
 import { ProjectParser } from "../parser/index.js";
+import { PolicyEngine } from "../policies/index.js";
 import { ConsoleReporter, HtmlReporter, JsonReporter } from "../reporters/index.js";
 import { RuleEngine, RuleRegistry, registerInitialRules } from "../rules/index.js";
 import { ProjectScanner } from "../scanner/index.js";
@@ -32,6 +33,7 @@ class CoreCommandRunner implements CommandRunner {
   public async analyze(input: AnalyzeProjectInput): Promise<AnalysisReport> {
     const result = await this.engine.analyze({
       logger: this.logger,
+      policyConfiguration: await loadPolicyConfiguration(input.projectPath),
       projectPath: input.projectPath,
     });
     await this.pipeline.execute(result.report, {
@@ -58,6 +60,7 @@ export function createDefaultDependencies(): CliDependencies {
     }),
     graphBuilder: new ArchitectureGraphBuilder(),
     parser: new ProjectParser(),
+    policyEngine: new PolicyEngine(),
     ruleConfiguration: { rules: {} },
     ruleEngine: new RuleEngine(registry),
     scanner: new ProjectScanner(logger),

@@ -1,0 +1,34 @@
+---
+const fallback = { stars: null, forks: null, issues: null };
+let stats = fallback;
+
+try {
+	const response = await fetch('https://api.github.com/repos/gkhan205/arcovia', {
+		headers: {
+			Accept: 'application/vnd.github+json',
+			...(process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}),
+		},
+	});
+
+	if (response.ok) {
+		const repository = await response.json();
+		stats = {
+			stars: repository.stargazers_count,
+			forks: repository.forks_count,
+			issues: repository.open_issues_count,
+		};
+	}
+} catch {
+	// A local/offline build still succeeds; GitHub Actions supplies the live values.
+}
+
+const formatCount = (value: number | null) =>
+	value === null ? '—' : value >= 1000 ? `${(value / 1000).toFixed(1)}k` : String(value);
+---
+
+<div class="github-stats" aria-label="Arcovia GitHub repository statistics">
+	<div><strong>{formatCount(stats.stars)}</strong><span>GitHub stars</span></div>
+	<div><strong>{formatCount(stats.forks)}</strong><span>Forks</span></div>
+	<div><strong>{formatCount(stats.issues)}</strong><span>Open issues</span></div>
+	<div><strong>100%</strong><span>Deterministic</span></div>
+</div>

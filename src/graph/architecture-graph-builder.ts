@@ -16,6 +16,7 @@ import {
 } from "../domain/index.js";
 
 import { GraphValidationError } from "./graph-validation-error.js";
+import { resolveLocalModule } from "./module-resolver.js";
 
 /** Builds the serializable import layer of Arcovia's architecture graph. */
 export class ArchitectureGraphBuilder {
@@ -153,36 +154,6 @@ function resolveTarget(
   };
 }
 
-function resolveLocalModule(
-  source: string,
-  sourcePath: string,
-  modules: readonly Module[],
-): Module | undefined {
-  if (source.startsWith(".")) {
-    return modules.find((module) => relativeCandidates(source, sourcePath).includes(module.path));
-  }
-
-  if (!source.startsWith("@/")) return undefined;
-
-  const normalizedAlias = `src/${source.slice(2)}`;
-  const aliasMatches = modules.filter(
-    (module) =>
-      stripExtension(module.path) === normalizedAlias ||
-      stripExtension(module.path).endsWith(`/${normalizedAlias}`),
-  );
-  return aliasMatches.length === 1 ? aliasMatches[0] : undefined;
-}
-
-function relativeCandidates(source: string, sourcePath: string): readonly string[] {
-  const base = posix.normalize(posix.join(posix.dirname(sourcePath), source));
-  const extensions = [".ts", ".tsx", ".js", ".jsx", ".mts", ".cts", ".mjs", ".cjs"];
-  return [
-    base,
-    ...extensions.map((extension) => `${base}${extension}`),
-    ...extensions.map((extension) => `${base}/index${extension}`),
-  ];
-}
-
 function createModuleNode(module: Module): GraphNode {
   return {
     id: module.id,
@@ -314,10 +285,6 @@ function validateGraph(nodes: readonly GraphNode[], edges: readonly GraphEdge[])
       throw new GraphValidationError("Graph contains a broken edge reference.");
     edgeIds.add(edge.id);
   }
-}
-
-function stripExtension(path: string): string {
-  return path.replace(/\.[^.]+$/u, "");
 }
 
 function createId(value: string): string {

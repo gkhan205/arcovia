@@ -1,0 +1,20 @@
+---
+import logo from '../assets/arcovia-logo.png';
+
+const base = import.meta.env.BASE_URL.endsWith('/')
+	? import.meta.env.BASE_URL
+	: `${import.meta.env.BASE_URL}/`;
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+	<div class="footer-brand">
+		<a href={base} aria-label="Arcovia home"><img src={logo.src} width={logo.width} height={logo.height} alt="Arcovia" /></a>
+		<p>Make architecture visible before it becomes expensive.</p>
+	</div>
+	<div><strong>Product</strong><a href={`${base}guides/introduction/`}>Features</a><a href={`${base}guides/commands/`}>CLI</a><a href={`${base}reference/findings/`}>Rules</a></div>
+	<div><strong>Resources</strong><a href={`${base}guides/introduction/`}>Documentation</a><a href={`${base}guides/quick-start/`}>Quick start</a><a href={`${base}guides/reports/`}>Reports</a></div>
+	<div><strong>Community</strong><a href="https://github.com/gkhan205/arcovia">GitHub</a><a href="https://github.com/gkhan205/arcovia/discussions">Discussions</a><a href="https://github.com/gkhan205/arcovia/blob/main/CONTRIBUTING.md">Contributing</a><a href="https://github.com/gkhan205/arcovia/blob/main/CHANGELOG.md">Changelog</a></div>
+</footer>
+<div class="site-footer-legal"><span>© {year} Arcovia. All rights reserved.</span><span class="legal-links"><a href="https://ghazikhan.in" target="_blank">Built by <span class="build-credit">Ghazi Khan</span></a><a href="https://github.com/gkhan205/arcovia/blob/main/LICENSE">MIT License</a><a href="https://github.com/gkhan205/arcovia/blob/main/SECURITY.md">Privacy Policy</a></span></div>
