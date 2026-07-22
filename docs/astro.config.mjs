@@ -4,10 +4,10 @@ import starlight from '@astrojs/starlight';
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://gkhan205.github.io',
+	site: 'https://arcovia.ghazikhan.in',
 	// GitHub Pages hosts this project at /arcovia. Leaving the base unset for
 	// local development keeps http://localhost:4321/ as the docs homepage.
-	base: process.env.SITE_BASE || undefined,
+	// base: process.env.SITE_BASE || undefined,
 	integrations: [
 		starlight({
 			title: 'Arcovia',
@@ -23,7 +23,7 @@ export default defineConfig({
 			head: [
 				{
 					tag: 'meta',
-					attrs: { property: 'og:image', content: 'https://gkhan205.github.io/arcovia/images/banner.png' },
+					attrs: { property: 'og:image', content: 'https://arcovia.ghazikhan.in/images/banner.png' },
 				},
 				{
 					tag: 'meta',
@@ -35,7 +35,7 @@ export default defineConfig({
 				},
 				{
 					tag: 'meta',
-					attrs: { name: 'twitter:image', content: 'https://gkhan205.github.io/arcovia/images/banner.png' },
+					attrs: { name: 'twitter:image', content: 'https://arcovia.ghazikhan.in/images/banner.png' },
 				},
 				{
 					tag: 'meta',
