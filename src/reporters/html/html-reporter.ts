@@ -26,9 +26,14 @@ function escapeJsonForScript(value: unknown): string {
     .replaceAll("&", "\\u0026");
 }
 
+/** Detects whether the reporter is running from the compiled package on any supported OS. */
+export function isBuiltReportModulePath(path: string): boolean {
+  return path.replaceAll("\\", "/").includes("/dist/");
+}
+
 function resolveReportAsset(name: "app.css" | "app.js"): string {
   const currentFile = fileURLToPath(import.meta.url);
-  return currentFile.includes("/dist/")
+  return isBuiltReportModulePath(currentFile)
     ? fileURLToPath(new URL(`./report/${name}`, import.meta.url))
     : fileURLToPath(new URL(`../../../dist/report/${name}`, import.meta.url));
 }
