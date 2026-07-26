@@ -29,6 +29,8 @@ Arcovia focuses on software architecture.
 - ✅ Actionable refactoring guidance
 - ✅ Interactive HTML reports
 
+<a href="https://www.producthunt.com/products/arcovia?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-arcovia" target="_blank" rel="noopener noreferrer"><img alt="Arcovia - Architecture Intelligence for React &amp; Next.js Projects | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1200556&amp;theme=dark&amp;t=1785055962528"></a>
+
 ## Get Started
 
 Run Arcovia from the project you want to inspect:
