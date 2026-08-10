@@ -1,6 +1,9 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import sitemap from '@astrojs/sitemap';
+import starlightLlmsTxt from 'starlight-llms-txt';
+import starlightChangelogs, { makeChangelogsSidebarLinks } from 'starlight-changelogs';
 
 // https://astro.build/config
 export default defineConfig({
@@ -10,6 +13,7 @@ export default defineConfig({
 	// base: process.env.SITE_BASE || undefined,
 	integrations: [
 		starlight({
+			plugins: [starlightLlmsTxt({}), starlightChangelogs()],
 			title: 'Arcovia',
 			description:
 				'Analyze React and Next.js projects, detect architectural issues, and turn complexity into actionable insights with deterministic, local-first analysis.',
@@ -90,7 +94,15 @@ export default defineConfig({
 						{ label: 'Findings', slug: 'reference/findings' },
 					],
 				},
+				{
+					label: 'Community',
+					items: [
+						{ label: 'Testimonials', slug: 'testimonials' },
+						...makeChangelogsSidebarLinks([{ type: 'all', label: 'Changelog', base: 'changelog' }]),
+					],
+				},
 			],
 		}),
+		sitemap(),
 	],
 });

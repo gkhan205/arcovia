@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://gkhan205.github.io/arcovia/sitemap-index.xml
+Sitemap: https://arcovia.ghazikhan.in/sitemap-index.xml
