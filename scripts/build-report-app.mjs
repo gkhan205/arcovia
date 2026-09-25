@@ -1,8 +1,10 @@
 import { rm } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 
 import { build } from "vite";
 
-const outputDirectory = new URL("../dist/report/", import.meta.url);
+const outputDirectory = fileURLToPath(new URL("../dist/report/", import.meta.url));
+const entryFile = fileURLToPath(new URL("../src/reporters/html/app/main.tsx", import.meta.url));
 
 await rm(outputDirectory, { force: true, recursive: true });
 await build({
@@ -11,12 +13,12 @@ await build({
     cssCodeSplit: false,
     emptyOutDir: false,
     lib: {
-      entry: new URL("../src/reporters/html/app/main.tsx", import.meta.url).pathname,
+      entry: entryFile,
       fileName: () => "app.js",
       formats: ["iife"],
       name: "ArcoviaHtmlReport",
     },
-    outDir: outputDirectory.pathname,
+    outDir: outputDirectory,
     rollupOptions: {
       output: {
         assetFileNames: "app[extname]",
