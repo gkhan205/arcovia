@@ -40,7 +40,7 @@ function resolveReportAsset(name: "app.css" | "app.js"): string {
 
 function resolveBrandAsset(name: "icon.png" | "logo.png"): string {
   const currentFile = fileURLToPath(import.meta.url);
-  return currentFile.includes("/dist/")
+  return isBuiltReportModulePath(currentFile)
     ? fileURLToPath(new URL(`../assets/${name}`, import.meta.url))
     : fileURLToPath(new URL(`../../../assets/${name}`, import.meta.url));
 }
