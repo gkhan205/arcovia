@@ -50,6 +50,29 @@ If a matching component imports a server module, Arcovia creates an `architectur
 
 Use exactly one of `allow` or `disallow`.
 
+## Tune built-in rules
+
+The same `.arcovia.json` file can override built-in rule thresholds, change their severity, or disable a rule for a project.
+
+```json
+{
+  "rules": {
+    "deeply-nested-jsx": {
+      "maxDepth": 10
+    },
+    "large-component": {
+      "maxLines": 350,
+      "severity": "error"
+    },
+    "orphan-module": "off"
+  }
+}
+```
+
+A rule can be set directly to `info`, `warning`, `error`, `critical`, or `off`, or configured with an options object. The same values are accepted by the object's `severity` option. Numeric threshold values must be finite and non-negative. If a rule is omitted, Arcovia keeps its built-in defaults.
+
+Threshold names are rule-specific. For example, `deeply-nested-jsx` and `deep-dependency-chain` use `maxDepth`, while `large-component` uses `maxLines`.
+
 ## Common patterns
 
 ### Layer boundaries

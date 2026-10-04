@@ -2,7 +2,11 @@ import { execFile } from "node:child_process";
 import { stat } from "node:fs/promises";
 import { promisify } from "node:util";
 
-import { loadConfiguration, loadPolicyConfiguration } from "../config/index.js";
+import {
+  loadConfiguration,
+  loadPolicyConfiguration,
+  loadRuleConfiguration,
+} from "../config/index.js";
 import { AnalysisBuilder, CoreEngine, ReporterPipeline } from "../core/index.js";
 import { ArchitectureGraphBuilder } from "../graph/index.js";
 import { ProjectParser } from "../parser/index.js";
@@ -31,10 +35,15 @@ class CoreCommandRunner implements CommandRunner {
   ) {}
 
   public async analyze(input: AnalyzeProjectInput): Promise<AnalysisReport> {
+    const [policyConfiguration, ruleConfiguration] = await Promise.all([
+      loadPolicyConfiguration(input.projectPath),
+      loadRuleConfiguration(input.projectPath),
+    ]);
     const result = await this.engine.analyze({
       logger: this.logger,
-      policyConfiguration: await loadPolicyConfiguration(input.projectPath),
+      policyConfiguration,
       projectPath: input.projectPath,
+      ruleConfiguration,
     });
     await this.pipeline.execute(result.report, {
       ...(input.benchmark === undefined ? {} : { benchmark: input.benchmark }),

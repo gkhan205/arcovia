@@ -104,7 +104,7 @@ export class CoreEngine {
       timings,
       () =>
         this.dependencies.ruleEngine.execute({
-          configuration: this.dependencies.ruleConfiguration,
+          configuration: options.ruleConfiguration ?? this.dependencies.ruleConfiguration,
           graph,
           logger,
           model,

@@ -10,9 +10,11 @@ import {
 } from "../policies/index.js";
 
 interface PolicyFile {
+  readonly $schema?: unknown;
   readonly extends?: readonly string[];
   readonly policies?: readonly PolicyDefinition[];
   readonly policyScore?: Readonly<Partial<Record<Severity, number>>>;
+  readonly rules?: unknown;
 }
 
 const POLICY_FILE = ".arcovia.json";
@@ -42,7 +44,7 @@ export async function loadPolicyConfiguration(projectRoot: string): Promise<Poli
 export function resolvePolicyConfiguration(value: unknown): PolicyConfiguration {
   if (value === undefined) return mergePolicies([], [], DEFAULT_SCORE_PENALTIES, "none", []);
   if (!isRecord(value)) throw invalid("Configuration must be a JSON object.");
-  assertKnownKeys(value, ["extends", "policies", "policyScore"]);
+  assertKnownKeys(value, ["$schema", "extends", "policies", "policyScore", "rules"]);
   const file = value as PolicyFile;
   const extensions = validateExtensions(file.extends);
   const policies = validateDefinitions(file.policies ?? []);

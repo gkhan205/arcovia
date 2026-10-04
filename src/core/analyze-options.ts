@@ -1,5 +1,6 @@
 import type { Configuration } from "../config/index.js";
 import type { PolicyConfiguration } from "../policies/index.js";
+import type { RuleConfiguration } from "../rules/index.js";
 import type { Logger } from "../shared/index.js";
 
 /** Inputs controlled by a caller when starting one analysis run. */
@@ -9,6 +10,7 @@ export interface AnalyzeOptions {
   readonly onProgress?: ProgressListener;
   readonly policyConfiguration?: PolicyConfiguration;
   readonly projectPath: string;
+  readonly ruleConfiguration?: RuleConfiguration;
   readonly signal?: AbortSignal;
 }
 

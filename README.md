@@ -143,8 +143,9 @@ arcovia doctor
 
 Arcovia `v0.2.0` adds custom policy rules through `.arcovia.json`. Use policies
 to enforce project-specific module boundaries, such as preventing UI modules
-from importing server code. Policies are evaluated as normal findings and appear
-in the terminal, JSON, and HTML reports. See the
+from importing server code. The same file can tune built-in rule thresholds,
+change rule severity, or disable rules for a project. Policies are evaluated as
+normal findings and appear in the terminal, JSON, and HTML reports. See the
 [custom policy rules guide](https://arcovia.ghazikhan.in/guides/custom-policy-rules/) for the
 schema, presets, `extends`, overrides, and examples.
 

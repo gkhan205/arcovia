@@ -152,6 +152,33 @@ describe("CoreEngine", () => {
     expect(result.timings.total).toBeGreaterThanOrEqual(0);
   });
 
+  it("uses per-analysis rule configuration when provided", async () => {
+    let receivedRuleConfiguration: unknown;
+    const engine = new CoreEngine({
+      analysisBuilder: new AnalysisBuilder({ version: "1.0.0" }),
+      graphBuilder: { build: () => graph },
+      parser: { parse: () => model },
+      ruleConfiguration: { rules: { "large-component": { maxLines: 300 } } },
+      ruleEngine: {
+        execute: async (context) => {
+          receivedRuleConfiguration = context.configuration;
+          return [];
+        },
+      },
+      scanner: { scan: async () => project },
+      scoreEngine: { calculate: () => score },
+    });
+
+    await engine.analyze({
+      projectPath: "/fixture",
+      ruleConfiguration: { rules: { "large-component": { maxLines: 450 } } },
+    });
+
+    expect(receivedRuleConfiguration).toEqual({
+      rules: { "large-component": { maxLines: 450 } },
+    });
+  });
+
   it("does not start work after cancellation", async () => {
     const controller = new AbortController();
     controller.abort();

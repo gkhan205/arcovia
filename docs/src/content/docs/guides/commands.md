@@ -49,7 +49,7 @@ Arcovia `v0.2.0` automatically reads `.arcovia.json` from the analyzed project r
 arcovia analyze .
 ```
 
-Use this file to define custom architecture boundaries, extend `arcovia:recommended`, or tune policy scoring. See [custom policy rules](../custom-policy-rules/) for the supported schema.
+Use this file to define custom architecture boundaries, extend `arcovia:recommended`, tune policy scoring, and configure built-in rule thresholds or severity. See [custom policy rules](../custom-policy-rules/) for the supported schema.
 
 ## Benchmark context
 
